@@ -237,6 +237,9 @@ link_libraries(${MK_LINK_LIBS})
 
 add_library({{.Name}} STATIC {{.Name}}.cpp)
 add_executable(unit-tests unit-tests.cpp)
+if("${WIN32}")
+  target_compile_options(unit-tests PRIVATE /EHs)  # exceptions in extern "C"
+endif()
 add_executable(integration-tests integration-tests.cpp {{.Name}})
 `
 
