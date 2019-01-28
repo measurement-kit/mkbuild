@@ -74,9 +74,6 @@ type moduleInfo struct {
 	// Name is the name of the module read from mkbuild.toml
 	Name string `toml:"name"`
 
-	// Version is the version of the module read from mkbuilt.toml
-	Version string `toml:"version"`
-
 	// Deps are the module dependencies read from mkbuilt.toml
 	Deps []string `toml:"deps"`
 
