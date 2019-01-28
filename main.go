@@ -222,7 +222,18 @@ if("${WIN32}")
 endif()
 
 include_directories({{.IncludeDirsStr}})
-link_libraries({{.LinkLibsStr}})
+
+set(MK_LINK_LIBS {{.LinkLibsStr}})
+if("${WIN32}" OR "${MINGW}")
+  list(APPEND MK_LINK_LIBS "ws2_32")
+  if ("${MINGW}")
+      list(APPEND MK_LINK_LIBS -static-libgcc -static-libstdc++)
+  endif()
+endif()
+list(APPEND MK_LINK_LIBS Threads::Threads)
+link_libraries("${MK_LINK_LIBS}")
+
+link_libraries(${MK_LINK_LIBS})
 
 add_library({{.Name}} STATIC {{.Name}}.cpp)
 add_executable(unit-tests unit-tests.cpp)
