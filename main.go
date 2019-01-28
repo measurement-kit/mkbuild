@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -232,12 +232,15 @@ link_libraries("${MK_LINK_LIBS}")
 
 link_libraries(${MK_LINK_LIBS})
 
+enable_testing()
 add_library({{.Name}} STATIC {{.Name}}.cpp)
 add_executable(unit-tests unit-tests.cpp)
 if("${WIN32}")
   target_compile_options(unit-tests PRIVATE /EHs)  # exceptions in extern "C"
 endif()
+add_test(NAME unit-tests COMMAND unit-tests)
 add_executable(integration-tests integration-tests.cpp {{.Name}})
+add_test(NAME integration-tests COMMAND integration-tests)
 `
 
 // writeCMakeListsTxt writes CMakeLists.txt in the current directory.
@@ -257,8 +260,8 @@ func writeCMakeListsTxt() {
 	}
 }
 
-// readModuleInfo reads module info from MKBuild.toml
-func readModuleInfo() {
+// initializeModuleInfo reads module info from MKBuild.toml
+func initializeModuleInfo() {
 	filename := "MKBuild.toml"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -289,11 +292,27 @@ func satisfyDeps() {
 	}
 }
 
-func main() {
-	flag.Parse()
-	log.SetHandler(cli.Default)
-	log.SetLevel(log.DebugLevel)
-	readModuleInfo()
+// subrAutogen implements the autogen behaviour.
+func subrAutogen() {
+	initializeModuleInfo()
 	satisfyDeps()
 	writeCMakeListsTxt()
+}
+
+func subrDocker(buildType string) {
+	log.Fatal("not implemented")
+}
+
+func main() {
+	log.SetHandler(cli.Default)
+	log.SetLevel(log.DebugLevel)
+	if len(os.Args) == 2 && os.Args[1] == "autogen" {
+		subrAutogen()
+	} else if len(os.Args) == 3 && os.Args[1] == "docker" {
+		subrDocker(os.Args[2])
+	} else {
+		fmt.Fprintf(os.Stderr, "Usage: mkbuild autogen\n")
+		fmt.Fprintf(os.Stderr, "       mkbuild docker <build-type>\n")
+		os.Exit(1)
+	}
 }
