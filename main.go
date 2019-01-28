@@ -13,9 +13,9 @@ import (
 	"strings"
 	"text/template"
 
+	"gopkg.in/yaml.v2"
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
-	"github.com/pelletier/go-toml"
 )
 
 // download will download |URL| in |filename|.
@@ -72,11 +72,14 @@ func downloadAndVerify(filename, SHA256, URL string) {
 
 // moduleInfo contains info on the module
 type moduleInfo struct {
-	// Name is the name of the module read from mkbuild.toml
-	Name string `toml:"name"`
+	// Name is the name of the module read from MKBuild.yaml
+	Name string `yaml:"name"`
 
-	// Deps are the module dependencies read from mkbuilt.toml
-	Deps []string `toml:"deps"`
+	// Dependencies are the module dependencies read from MKBuild.yaml
+	Dependencies []string `yaml:"dependencies"`
+
+	// Tests contains information on the tests to run read from MKBuild.yaml
+	Tests map[string][]string
 
 	// IncludeDirs are the include directories computed by the code
 	// that installs all the dependencies
@@ -239,9 +242,9 @@ add_executable(unit-tests unit-tests.cpp)
 if("${WIN32}")
 	target_compile_options(unit-tests PRIVATE /EHs) # exceptions in extern "C"
 endif()
-add_test(NAME unit-tests COMMAND unit-tests)
-add_executable(integration-tests integration-tests.cpp {{.Name}})
-add_test(NAME integration-tests COMMAND integration-tests)
+{{range $testName, $cmdLine := .Tests}}
+add_test(NAME {{$testName}} COMMAND {{range $idx, $arg := $cmdLine}}{{$arg}}{{end}})
+{{end}}
 `
 
 // writeCMakeListsTxt writes CMakeLists.txt in the current directory.
@@ -263,12 +266,12 @@ func writeCMakeListsTxt() {
 
 // initializeModuleInfo reads module info from MKBuild.toml
 func initializeModuleInfo() {
-	filename := "MKBuild.toml"
+	filename := "MKBuild.yaml"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.WithError(err).Fatalf("cannot read %s", filename)
 	}
-	err = toml.Unmarshal(data, &gModuleInfo)
+	err = yaml.Unmarshal(data, &gModuleInfo)
 	if err != nil {
 		log.WithError(err).Fatalf("cannot unmarshal %s", filename)
 	}
@@ -276,7 +279,7 @@ func initializeModuleInfo() {
 
 // satisfyDeps satisfies the dependencies
 func satisfyDeps() {
-	for _, dep := range gModuleInfo.Deps {
+	for _, dep := range gModuleInfo.Dependencies {
 		if dep == "curl.haxx.se/ca" {
 			installCurlHaxxSeCa(dep)
 		} else if dep == "github.com/adishavit/argh" {
