@@ -13,9 +13,9 @@ import (
 	"strings"
 	"text/template"
 
-	"gopkg.in/yaml.v2"
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
+	"gopkg.in/yaml.v2"
 )
 
 // download will download |URL| in |filename|.
@@ -77,6 +77,9 @@ type moduleInfo struct {
 
 	// Dependencies are the module dependencies read from MKBuild.yaml
 	Dependencies []string `yaml:"dependencies"`
+
+	// Executables lists all the executabls to build read from MKBuild.yaml
+	Executables map[string][]string
 
 	// Tests contains information on the tests to run read from MKBuild.yaml
 	Tests map[string][]string
@@ -171,80 +174,78 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") OR
-	 ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Werror")
-	# https://www.owasp.org/index.php/C-Based_Toolchain_Hardening_Cheat_Sheet
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wall")
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wextra")
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wconversion")
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wcast-align")
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wformat=2")
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wformat-security")
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -fno-common")
-	# Some options are only supported by GCC when we're compiling C code:
-	if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-		set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wmissing-prototypes")
-		set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wstrict-prototypes")
-	else()
-		set(MK_C_FLAGS "${MK_C_FLAGS} -Wmissing-prototypes")
-		set(MK_C_FLAGS "${MK_C_FLAGS} -Wstrict-prototypes")
-	endif()
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wmissing-declarations")
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wstrict-overflow")
-	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-		set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wtrampolines")
-	endif()
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Woverloaded-virtual")
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wreorder")
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wsign-promo")
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wnon-virtual-dtor")
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -fstack-protector-all")
-	if(NOT "${APPLE}")
-		set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,noexecstack")
-		set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,now")
-		set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,relro")
-		set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,nodlopen")
-		set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,nodump")
-	endif()
-	add_definitions(-D_FORTIFY_SOURCES=2)
+   ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Werror")
+  # https://www.owasp.org/index.php/C-Based_Toolchain_Hardening_Cheat_Sheet
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wall")
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wextra")
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wconversion")
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wcast-align")
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wformat=2")
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wformat-security")
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -fno-common")
+  # Some options are only supported by GCC when we're compiling C code:
+  if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wmissing-prototypes")
+    set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wstrict-prototypes")
+  else()
+    set(MK_C_FLAGS "${MK_C_FLAGS} -Wmissing-prototypes")
+    set(MK_C_FLAGS "${MK_C_FLAGS} -Wstrict-prototypes")
+  endif()
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wmissing-declarations")
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wstrict-overflow")
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wtrampolines")
+  endif()
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Woverloaded-virtual")
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wreorder")
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wsign-promo")
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wnon-virtual-dtor")
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -fstack-protector-all")
+  if(NOT "${APPLE}")
+    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,noexecstack")
+    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,now")
+    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,relro")
+    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,nodlopen")
+    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,nodump")
+  endif()
+  add_definitions(-D_FORTIFY_SOURCES=2)
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-	# TODO(bassosimone): add support for /Wall and /analyze
-	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} /WX /W4")
-	set(MK_LD_FLAGS "${MK_LD_FLAGS} /WX")
+  # TODO(bassosimone): add support for /Wall and /analyze
+  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} /WX /W4")
+  set(MK_LD_FLAGS "${MK_LD_FLAGS} /WX")
 else()
-	message(FATAL_ERROR "Compiler not supported: ${CMAKE_CXX_COMPILER_ID}")
+  message(FATAL_ERROR "Compiler not supported: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MK_COMMON_FLAGS} ${MK_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MK_COMMON_FLAGS} ${MK_CXX_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MK_LD_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${MK_LD_FLAGS}")
 if("${WIN32}")
-	add_definitions(-D_WIN32_WINNT=0x0600) # for NI_NUMERICSERV and WSAPoll
+  add_definitions(-D_WIN32_WINNT=0x0600) # for NI_NUMERICSERV and WSAPoll
 endif()
 
 include_directories({{.IncludeDirsStr}})
 
 set(MK_LINK_LIBS {{.LinkLibsStr}})
 if("${WIN32}" OR "${MINGW}")
-	list(APPEND MK_LINK_LIBS "ws2_32")
-	if ("${MINGW}")
-			list(APPEND MK_LINK_LIBS -static-libgcc -static-libstdc++)
-	endif()
+  list(APPEND MK_LINK_LIBS "ws2_32")
+  if ("${MINGW}")
+      list(APPEND MK_LINK_LIBS -static-libgcc -static-libstdc++)
+  endif()
 endif()
 list(APPEND MK_LINK_LIBS Threads::Threads)
 link_libraries("${MK_LINK_LIBS}")
 
-link_libraries(${MK_LINK_LIBS})
+if("${WIN32}")
+  compile_options(PRIVATE /EHs) # exceptions in extern "C"
+endif()
 
 enable_testing()
-add_library({{.Name}} STATIC {{.Name}}.cpp)
-add_executable(unit-tests unit-tests.cpp)
-if("${WIN32}")
-	target_compile_options(unit-tests PRIVATE /EHs) # exceptions in extern "C"
-endif()
+{{range $exeName, $sources := .Executables}}
+add_executable({{$exeName}} {{range $idx, $src := $sources}}{{$src}}{{end}}){{end}}
 {{range $testName, $cmdLine := .Tests}}
-add_test(NAME {{$testName}} COMMAND {{range $idx, $arg := $cmdLine}}{{$arg}}{{end}})
-{{end}}
+add_test(NAME {{$testName}} COMMAND {{range $idx, $arg := $cmdLine}}{{$arg}}{{end}}){{end}}
 `
 
 // writeCMakeListsTxt writes CMakeLists.txt in the current directory.
@@ -323,33 +324,33 @@ tc qdisc add dev eth0 root netem delay 200ms 10ms
 
 # Select the proper build flags depending on the build type
 if [ "$BUILD_TYPE" = "asan" ]; then
-	export CFLAGS="-fsanitize=address -O1 -fno-omit-frame-pointer"
-	export CXXFLAGS="-fsanitize=address -O1 -fno-omit-frame-pointer"
-	export LDFLAGS="-fsanitize=address -fno-omit-frame-pointer"
-	export CMAKE_BUILD_TYPE="Debug"
+  export CFLAGS="-fsanitize=address -O1 -fno-omit-frame-pointer"
+  export CXXFLAGS="-fsanitize=address -O1 -fno-omit-frame-pointer"
+  export LDFLAGS="-fsanitize=address -fno-omit-frame-pointer"
+  export CMAKE_BUILD_TYPE="Debug"
 
 elif [ "$BUILD_TYPE" = "clang" ]; then
-	export CMAKE_BUILD_TYPE="Release"
-	export CXXFLAGS="-stdlib=libc++"
+  export CMAKE_BUILD_TYPE="Release"
+  export CXXFLAGS="-stdlib=libc++"
 
 elif [ "$BUILD_TYPE" = "coverage" ]; then
-	export CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
-	export CMAKE_BUILD_TYPE="Debug"
-	export CXXFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
-	export LDFLAGS="-lgcov"
+  export CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
+  export CMAKE_BUILD_TYPE="Debug"
+  export CXXFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
+  export LDFLAGS="-lgcov"
 
 elif [ "$BUILD_TYPE" = "ubsan" ]; then
-	export CFLAGS="-fsanitize=undefined -fno-sanitize-recover"
-	export CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover"
-	export LDFLAGS="-fsanitize=undefined"
-	export CMAKE_BUILD_TYPE="Debug"
+  export CFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+  export CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+  export LDFLAGS="-fsanitize=undefined"
+  export CMAKE_BUILD_TYPE="Debug"
 
 elif [ "$BUILD_TYPE" = "vanilla" ]; then
-	export CMAKE_BUILD_TYPE="Release"
+  export CMAKE_BUILD_TYPE="Release"
 
 else
-	echo "$0: BUILD_TYPE not in: asan, clang, coverage, tsan, ubsan, vanilla" 1>&2
-	exit 1
+  echo "$0: BUILD_TYPE not in: asan, clang, coverage, tsan, ubsan, vanilla" 1>&2
+  exit 1
 fi
 
 # Configure, make, and make check equivalent
@@ -359,11 +360,11 @@ ctest --output-on-failure -a -j8
 
 # Measure and possibly report the test coverage
 if [ "$BUILD_TYPE" = "coverage" ]; then
-	lcov --directory . --capture -o lcov.info
-	if [ "$CODECOV_TOKEN" != "" ]; then
-		curl -fsSL -o codecov.sh https://codecov.io/bash
-		bash codecov.sh -X gcov -f lcov.info
-	fi
+  lcov --directory . --capture -o lcov.info
+  if [ "$CODECOV_TOKEN" != "" ]; then
+    curl -fsSL -o codecov.sh https://codecov.io/bash
+    bash codecov.sh -X gcov -f lcov.info
+  fi
 fi
 `
 
