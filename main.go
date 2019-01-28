@@ -1,0 +1,229 @@
+package main
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"flag"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"text/template"
+
+	"github.com/apex/log"
+	"github.com/apex/log/handlers/cli"
+	"github.com/pelletier/go-toml"
+)
+
+// download will download |URL| in |filename|.
+func download(filename, URL string) {
+	dirname, _ := filepath.Split(filename)
+	if dirname != "" {
+		err := os.MkdirAll(dirname, 0755)
+		if err != nil {
+			log.WithError(err).Fatalf("MkdirAll failed for: %s", dirname)
+		}
+	}
+	filep, err := os.Create(filename)
+	if err != nil {
+		log.WithError(err).Fatalf("os.Create failed for: %s", filename)
+	}
+	defer filep.Close()
+	response, err := http.Get(URL)
+	if err != nil {
+		log.WithError(err).Fatalf("http.Get failed for: %s", URL)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != 200 {
+		log.Fatalf("HTTP server response: %s; for URL: %s", response.Status, URL)
+	}
+	_, err = io.Copy(filep, response.Body)
+	if err != nil {
+		log.WithError(err).Fatalf("io.Copy failed for: %s", filename)
+	}
+}
+
+// verify will verify that |filename| has SHA256 equal to |SHA256|.
+func verify(filename, SHA256 string) {
+	filep, err := os.Open(filename)
+	if err != nil {
+		log.WithError(err).Fatalf("log.Open failed for: %s", filename)
+	}
+	defer filep.Close()
+	hash := sha256.New()
+	if _, err := io.Copy(hash, filep); err != nil {
+		log.WithError(err).Fatalf("io.Copy failed for: %s", filename)
+	}
+	result := hex.EncodeToString(hash.Sum(nil))
+	if result != SHA256 {
+		log.Fatalf("hash mismatch for: %s; sha256: %s", filename, SHA256)
+	}
+}
+
+// downloadAndVerify downloads |URL| in |filename| and verify that
+// |filename| has SHA256 equal to |SHA256|.
+func downloadAndVerify(filename, SHA256, URL string) {
+	download(filename, URL)
+	verify(filename, SHA256)
+}
+
+// moduleInfo contains info on the module
+type moduleInfo struct {
+	// Name is the name of the module read from mkbuild.toml
+	Name string `toml:"name"`
+
+	// Version is the version of the module read from mkbuilt.toml
+	Version string `toml:"version"`
+
+	// Deps are the module dependencies read from mkbuilt.toml
+	Deps []string `toml:"deps"`
+
+	// IncludeDirs are the include directories computed by the code
+	// that installs all the dependencies
+	IncludeDirs []string
+
+	// IncludeDirsStr is the list of include directories formatted for
+	// cmake as computed by the code that writes CMakeLists.txt
+	IncludeDirsStr string
+
+	// LinkLibs are the link libraries computed by the code
+	// that installs all the dependencies
+	LinkLibs []string
+
+	// LinkLibsStr is the list of link libraries formatted for
+	// cmake as computed by the code that writes CMakeLists.txt
+	LinkLibsStr string
+}
+
+// gModuleInfo is the global moduleInfo
+var gModuleInfo moduleInfo
+
+// installCurlHaxxSeCa installs CURL's CA bundle
+func installCurlHaxxSeCa(dep string) {
+	log.Infof("install: %s", dep)
+	downloadAndVerify(
+		filepath.Join("dep", "curl.haxx.se", "ca", "ca-bundle.pem"),
+		"4d89992b90f3e177ab1d895c00e8cded6c9009bec9d56981ff4f0a59e9cc56d6",
+		"https://curl.haxx.se/ca/cacert-2018-12-05.pem",
+	)
+}
+
+// installGithubcomAdishavitArgh installs github.com/adishavit/argh
+func installGithubcomAdishavitArgh(dep string) {
+	log.Infof("install: %s", dep)
+	downloadAndVerify(
+		filepath.Join("dep", "github.com", "adishavit", "argh", "argh.h"),
+		"ddb7dfc18dcf90149735b76fb2cff101067453a1df1943a6911233cb7085980c",
+		"https://raw.githubusercontent.com/adishavit/argh/v1.3.0/argh.h",
+	)
+	gModuleInfo.IncludeDirs = append(gModuleInfo.IncludeDirs,
+		filepath.Join("dep", "github.com", "adishavit", "argh"))
+}
+
+// installGithubcomCatchorgCatch2 installs github.com/catchorg/Catch2
+func installGithubcomCatchorgCatch2(dep string) {
+	log.Infof("install: %s", dep)
+	downloadAndVerify(
+		filepath.Join("dep", "github.com", "catchorg", "catch2", "catch.hpp"),
+		"5eb8532fd5ec0d28433eba8a749102fd1f98078c5ebf35ad607fb2455a000004",
+		"https://github.com/catchorg/Catch2/releases/download/v2.3.0/catch.hpp",
+	)
+	gModuleInfo.IncludeDirs = append(gModuleInfo.IncludeDirs,
+		filepath.Join("dep", "github.com", "catchorg", "Catch2"))
+}
+
+// installGithubcomCurlCurl installs github.com/curl/curl
+func installGithubcomCurlCurl(dep string) {
+	log.Infof("install: %s", dep)
+	gModuleInfo.LinkLibs = append(gModuleInfo.LinkLibs, "-lcurl")
+}
+
+// installGithubcomMeasurementkitMkmock installs
+// github.com/measurement-kit/mkmock
+func installGithubcomMeasurementkitMkmock(dep string) {
+	log.Infof("install: %s", dep)
+	downloadAndVerify(
+		filepath.Join("dep", "github.com", "measurement-kit", "mkmock", "mkmock.hpp"),
+		"f07bc063a2e64484482f986501003e45ead653ea3f53fadbdb45c17a51d916d2",
+		"https://raw.githubusercontent.com/measurement-kit/mkmock/v0.2.0/mkmock.hpp",
+	)
+	gModuleInfo.IncludeDirs = append(gModuleInfo.IncludeDirs,
+		filepath.Join("dep", "github.com", "measurement-kit", "mkmock"))
+}
+
+// CmakeTemplate is the template for CMakeLists.txt
+var CmakeTemplate = `# Autogenerated by mkbuild
+cmake_minimum_required(VERSION 3.1.0)
+project({{.Name}})
+include_directories({{.IncludeDirsStr}})
+link_libraries({{.LinkLibsStr}})
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+add_library({{.Name}} STATIC {{.Name}}.cpp)
+add_executable(unit-tests unit-tests.cpp)
+add_executable(integration-tests integration-tests.cpp {{.Name}})
+`
+
+// writeCMakeListsTxt writes CMakeLists.txt in the current directory.
+func writeCMakeListsTxt() {
+	gModuleInfo.IncludeDirsStr = strings.Join(gModuleInfo.IncludeDirs, ";")
+	gModuleInfo.LinkLibsStr = strings.Join(gModuleInfo.LinkLibs, ";")
+	tmpl := template.Must(template.New("CMakeLists").Parse(CmakeTemplate))
+	filename := "CMakeLists.txt"
+	filep, err := os.Create(filename)
+	if err != nil {
+		log.WithError(err).Fatalf("os.Open failed for: %s", filename)
+	}
+	defer filep.Close()
+	err = tmpl.Execute(filep, gModuleInfo)
+	if err != nil {
+		log.WithError(err).Fatalf("tmpl.Execute failed for: %s", filename)
+	}
+}
+
+// readModuleInfo reads module info from MKBuild.toml
+func readModuleInfo() {
+	filename := "MKBuild.toml"
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.WithError(err).Fatalf("cannot read %s", filename)
+	}
+	err = toml.Unmarshal(data, &gModuleInfo)
+	if err != nil {
+		log.WithError(err).Fatalf("cannot unmarshal %s", filename)
+	}
+}
+
+// satisfyDeps satisfies the dependencies
+func satisfyDeps() {
+	for _, dep := range gModuleInfo.Deps {
+		if dep == "curl.haxx.se/ca" {
+			installCurlHaxxSeCa(dep)
+		} else if dep == "github.com/adishavit/argh" {
+			installGithubcomAdishavitArgh(dep)
+		} else if dep == "github.com/catchorg/catch2" {
+			installGithubcomCatchorgCatch2(dep)
+		} else if dep == "github.com/curl/curl" {
+			installGithubcomCurlCurl(dep)
+		} else if dep == "github.com/measurement-kit/mkmock" {
+			installGithubcomMeasurementkitMkmock(dep)
+		} else {
+			log.Fatalf("unknown dependency: %s", dep)
+		}
+	}
+}
+
+func main() {
+	flag.Parse()
+	log.SetHandler(cli.Default)
+	log.SetLevel(log.DebugLevel)
+	readModuleInfo()
+	satisfyDeps()
+	writeCMakeListsTxt()
+}
