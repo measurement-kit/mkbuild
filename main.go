@@ -263,6 +263,7 @@ func writeCMakeListsTxt() {
 	if err != nil {
 		log.WithError(err).Fatalf("tmpl.Execute failed for: %s", filename)
 	}
+	log.Infof("Written %s", filename)
 }
 
 // initializeModuleInfo reads module info from MKBuild.toml
