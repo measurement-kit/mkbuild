@@ -168,65 +168,65 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") OR
-   ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Werror")
-  # https://www.owasp.org/index.php/C-Based_Toolchain_Hardening_Cheat_Sheet
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wall")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wextra")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wconversion")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wcast-align")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wformat=2")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wformat-security")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -fno-common")
-  # Some options are only supported by GCC when we're compiling C code:
-  if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wmissing-prototypes")
-    set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wstrict-prototypes")
-  else()
-    set(MK_C_FLAGS "${MK_C_FLAGS} -Wmissing-prototypes")
-    set(MK_C_FLAGS "${MK_C_FLAGS} -Wstrict-prototypes")
-  endif()
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wmissing-declarations")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wstrict-overflow")
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wtrampolines")
-  endif()
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Woverloaded-virtual")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wreorder")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wsign-promo")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wnon-virtual-dtor")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -fstack-protector-all")
-  if(NOT "${APPLE}")
-    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,noexecstack")
-    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,now")
-    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,relro")
-    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,nodlopen")
-    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,nodump")
-  endif()
-  add_definitions(-D_FORTIFY_SOURCES=2)
+	 ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Werror")
+	# https://www.owasp.org/index.php/C-Based_Toolchain_Hardening_Cheat_Sheet
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wall")
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wextra")
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wconversion")
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wcast-align")
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wformat=2")
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wformat-security")
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -fno-common")
+	# Some options are only supported by GCC when we're compiling C code:
+	if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+		set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wmissing-prototypes")
+		set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wstrict-prototypes")
+	else()
+		set(MK_C_FLAGS "${MK_C_FLAGS} -Wmissing-prototypes")
+		set(MK_C_FLAGS "${MK_C_FLAGS} -Wstrict-prototypes")
+	endif()
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wmissing-declarations")
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wstrict-overflow")
+	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+		set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wtrampolines")
+	endif()
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Woverloaded-virtual")
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wreorder")
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wsign-promo")
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wnon-virtual-dtor")
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -fstack-protector-all")
+	if(NOT "${APPLE}")
+		set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,noexecstack")
+		set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,now")
+		set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,relro")
+		set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,nodlopen")
+		set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,nodump")
+	endif()
+	add_definitions(-D_FORTIFY_SOURCES=2)
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  # TODO(bassosimone): add support for /Wall and /analyze
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} /WX /W4")
-  set(MK_LD_FLAGS "${MK_LD_FLAGS} /WX")
+	# TODO(bassosimone): add support for /Wall and /analyze
+	set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} /WX /W4")
+	set(MK_LD_FLAGS "${MK_LD_FLAGS} /WX")
 else()
-  message(FATAL_ERROR "Compiler not supported: ${CMAKE_CXX_COMPILER_ID}")
+	message(FATAL_ERROR "Compiler not supported: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MK_COMMON_FLAGS} ${MK_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MK_COMMON_FLAGS} ${MK_CXX_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MK_LD_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${MK_LD_FLAGS}")
 if("${WIN32}")
-  add_definitions(-D_WIN32_WINNT=0x0600) # for NI_NUMERICSERV and WSAPoll
+	add_definitions(-D_WIN32_WINNT=0x0600) # for NI_NUMERICSERV and WSAPoll
 endif()
 
 include_directories({{.IncludeDirsStr}})
 
 set(MK_LINK_LIBS {{.LinkLibsStr}})
 if("${WIN32}" OR "${MINGW}")
-  list(APPEND MK_LINK_LIBS "ws2_32")
-  if ("${MINGW}")
-      list(APPEND MK_LINK_LIBS -static-libgcc -static-libstdc++)
-  endif()
+	list(APPEND MK_LINK_LIBS "ws2_32")
+	if ("${MINGW}")
+			list(APPEND MK_LINK_LIBS -static-libgcc -static-libstdc++)
+	endif()
 endif()
 list(APPEND MK_LINK_LIBS Threads::Threads)
 link_libraries("${MK_LINK_LIBS}")
@@ -237,7 +237,7 @@ enable_testing()
 add_library({{.Name}} STATIC {{.Name}}.cpp)
 add_executable(unit-tests unit-tests.cpp)
 if("${WIN32}")
-  target_compile_options(unit-tests PRIVATE /EHs)  # exceptions in extern "C"
+	target_compile_options(unit-tests PRIVATE /EHs) # exceptions in extern "C"
 endif()
 add_test(NAME unit-tests COMMAND unit-tests)
 add_executable(integration-tests integration-tests.cpp {{.Name}})
@@ -306,7 +306,62 @@ BUILD_TYPE="{{.BUILD_TYPE}}"
 CODECOV_TOKEN="{{.CODECOV_TOKEN}}"
 TRAVIS_BRANCH="{{.TRAVIS_BRANCH}}"
 set -x
-echo "It works"
+
+# Build the latest mkbuild for the docker container
+export GOPATH=/go
+install -d $GOPATH
+go get -v github.com/bassosimone/mkbuild
+cd /mk
+env|grep -v TOKEN|sort
+$GOPATH/bin/mkbuild autogen
+
+# Make sure we don't consume too much resources by bumping latency
+tc qdisc add dev eth0 root netem delay 200ms 10ms
+
+# Select the proper build flags depending on the build type
+if [ "$BUILD_TYPE" = "asan" ]; then
+	export CFLAGS="-fsanitize=address -O1 -fno-omit-frame-pointer"
+	export CXXFLAGS="-fsanitize=address -O1 -fno-omit-frame-pointer"
+	export LDFLAGS="-fsanitize=address -fno-omit-frame-pointer"
+	export CMAKE_BUILD_TYPE="Debug"
+
+elif [ "$BUILD_TYPE" = "clang" ]; then
+	export CMAKE_BUILD_TYPE="Release"
+	export CXXFLAGS="-stdlib=libc++"
+
+elif [ "$BUILD_TYPE" = "coverage" ]; then
+	export CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
+	export CMAKE_BUILD_TYPE="Debug"
+	export CXXFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
+	export LDFLAGS="-lgcov"
+
+elif [ "$BUILD_TYPE" = "ubsan" ]; then
+	export CFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+	export CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+	export LDFLAGS="-fsanitize=undefined"
+	export CMAKE_BUILD_TYPE="Debug"
+
+elif [ "$BUILD_TYPE" = "vanilla" ]; then
+	export CMAKE_BUILD_TYPE="Release"
+
+else
+	echo "$0: BUILD_TYPE not in: asan, clang, coverage, tsan, ubsan, vanilla" 1>&2
+	exit 1
+fi
+
+# Configure, make, and make check equivalent
+cmake -GNinja -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE .
+cmake --build . -- -v
+ctest --output-on-failure -a -j8
+
+# Measure and possibly report the test coverage
+if [ "$BUILD_TYPE" = "coverage" ]; then
+	lcov --directory . --capture -o lcov.info
+	if [ "$CODECOV_TOKEN" != "" ]; then
+		curl -fsSL -o codecov.sh https://codecov.io/bash
+		bash codecov.sh -X gcov -f lcov.info
+	fi
+fi
 `
 
 // subrDocker implements the docker behaviour.
