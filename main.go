@@ -10,11 +10,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"text/template"
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
+	"github.com/bassosimone/mkbuild/unzipx"
 	"gopkg.in/yaml.v2"
 )
 
@@ -63,11 +65,21 @@ func verify(filename, SHA256 string) {
 	}
 }
 
-// downloadAndVerify downloads |URL| in |filename| and verify that
+// downloadAndVerify downloads |URL| in |filename| and verifies that
 // |filename| has SHA256 equal to |SHA256|.
 func downloadAndVerify(filename, SHA256, URL string) {
 	download(filename, URL)
 	verify(filename, SHA256)
+}
+
+// downloadVerifyAndUnzip downloads |URL| in |zipFilename|, verifies that
+// it has SHA256 equal to |SHA256, then unzips it in |destdir|.
+func downloadVerifyAndUnzip(zipFilename, destDir, SHA256, URL string) {
+	downloadAndVerify(zipFilename, SHA256, URL)
+	_, err := unzipx.Unzip(zipFilename, destDir)
+	if err != nil {
+		log.WithError(err).Fatalf("cannot unzip: %s", zipFilename)
+	}
 }
 
 // moduleInfo contains info on the module
@@ -138,10 +150,46 @@ func installGithubcomCatchorgCatch2(dep string) {
 		filepath.Join(".mkbuild", "dep", "github.com", "catchorg", "Catch2"))
 }
 
+// installWinCurl downloads and verifies CURL's Windows zipfile for
+// |version|, |arch|, having |SHA256| as SHA256. This function will set
+// the proper IncludeDirs, LinkLibs, etc. as a side effect.
+func installWinCurl(version, arch, SHA256 string) {
+	prefix := filepath.Join(".mkbuild", "dep", "github.com", "curl", "curl")
+	name := fmt.Sprintf("curl-%s-%s-mingw", version, arch)
+	zipFile := fmt.Sprintf("%s.zip", name)
+	url := fmt.Sprintf("https://curl.haxx.se/windows/dl-%s/%s", version, zipFile)
+	downloadVerifyAndUnzip(
+		filepath.Join(prefix, zipFile), prefix, SHA256, url,
+	)
+	gModuleInfo.IncludeDirs = append(gModuleInfo.IncludeDirs,
+		filepath.Join(prefix, name, "include"))
+	gModuleInfo.LinkLibs = append(gModuleInfo.LinkLibs,
+		filepath.Join(prefix, name, "lib", "libcurl.dll.a"))
+}
+
 // installGithubcomCurlCurl installs github.com/curl/curl
 func installGithubcomCurlCurl(dep string) {
 	log.Infof("install: %s", dep)
-	gModuleInfo.LinkLibs = append(gModuleInfo.LinkLibs, "-lcurl")
+	// TODO(bassosimone): we should probably specify this property via
+	// command line. For example, `mkbuild autogen` will use the current
+	// runtime.GOOS and `mkbuild autogen win32` will use win32.
+	if runtime.GOOS != "windows" {
+		gModuleInfo.LinkLibs = append(gModuleInfo.LinkLibs, "-lcurl")
+		return
+	}
+	log.Warn("CURL support for Windows is still broken")
+	winCurlVersion := "7.63.0"
+	SHA256All := map[string]string{
+		"win32": "9bf0f3a4d6aab8d3db7af3ed6edef9c3b12022b36c32edaf9ac443caa8899f65",
+		"win64": "8795a1786a89607d0c52e3c0d8636aa29e4cf8c5b22a1dcb14ce6af0829b4814",
+	}
+	// TODO(bassosimone): the following is broken because we're setting
+	// both the 32 bit and the 64 bit libraries. However, if we'll use
+	// the command line, as mentioned above, the easy fix is to just use
+	// whatever is provided from command line to choose.
+	for arch, SHA256 := range SHA256All {
+		installWinCurl(winCurlVersion, arch, SHA256)
+	}
 }
 
 // installGithubcomMeasurementkitMkmock installs
