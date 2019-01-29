@@ -357,13 +357,8 @@ else
   exit 1
 fi
 
-# Change to build directory
-rm -rf build/$BUILD_TYPE
-install -d build/$BUILD_TYPE
-cd build/$BUILD_TYPE
-
 # Configure, make, and make check equivalent
-cmake -GNinja -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ../..
+cmake -GNinja -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE .
 cmake --build . -- -v
 ctest --output-on-failure -a -j8
 
