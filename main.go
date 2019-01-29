@@ -305,8 +305,8 @@ func subrAutogen() {
 	writeCMakeListsTxt()
 }
 
-// trampolineTemplate is the template trampoline.sh run in the container.
-var trampolineTemplate = `#!/bin/sh -e
+// runnerTemplate is the template runner.sh run in the container.
+var runnerTemplate = `#!/bin/sh -e
 BUILD_TYPE="{{.BUILD_TYPE}}"
 CODECOV_TOKEN="{{.CODECOV_TOKEN}}"
 TRAVIS_BRANCH="{{.TRAVIS_BRANCH}}"
@@ -371,8 +371,13 @@ fi
 
 // writeDockerRunner writes the docker runner script.
 func writeDockerRunner(buildType string) {
-	tmpl := template.Must(template.New("trampoline.sh").Parse(trampolineTemplate))
-	filename := "trampoline.sh"
+	tmpl := template.Must(template.New("runner.sh").Parse(runnerTemplate))
+	dirname := filepath.Join(".mkbuild", "script")
+	err := os.MkdirAll(dirname, 0755)
+	if err != nil {
+		log.WithError(err).Fatalf("cannot create dir: %s", dirname)
+	}
+	filename := filepath.Join(dirname, "runner.sh")
 	filep, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
 	if err != nil {
 		log.WithError(err).Fatalf("cannot open file: %s", filename)
@@ -397,7 +402,7 @@ func subrDocker(buildType string) {
 	}
 	command := exec.Command("docker", "run", "--cap-add=NET_ADMIN", "-v",
 		fmt.Sprintf("%s:/mk", cwd), "-t", "bassosimone/mk-debian",
-		"/mk/trampoline.sh")
+		"/mk/.mkbuild/script/runner.sh")
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
 	err = command.Run()
