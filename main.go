@@ -377,8 +377,8 @@ if [ "$BUILD_TYPE" = "coverage" ]; then
 fi
 `
 
-// subrDocker implements the docker behaviour.
-func subrDocker(buildType string) {
+// writeDockerRunner writes the docker runner script.
+func writeDockerRunner(buildType string) {
 	tmpl := template.Must(template.New("trampoline.sh").Parse(trampolineTemplate))
 	filename := "trampoline.sh"
 	filep, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
@@ -394,6 +394,11 @@ func subrDocker(buildType string) {
 	if err != nil {
 		log.WithError(err).Fatalf("cannot write file: %s", filename)
 	}
+}
+
+// subrDocker implements the docker behaviour.
+func subrDocker(buildType string) {
+	writeDockerRunner(buildType)
 	cwd, err := os.Getwd()
 	if err != nil {
 		log.WithError(err).Fatal("os.Getwd failed")
