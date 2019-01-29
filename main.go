@@ -243,7 +243,7 @@ endif()
 
 enable_testing()
 {{range $exeName, $sources := .Executables}}
-add_executable({{$exeName}} {{range $idx, $src := $sources}}{{$src}}{{end}}){{end}}
+add_executable({{$exeName}}{{range $idx, $src := $sources}} {{$src}}{{end}}){{end}}
 {{range $testName, $cmdLine := .Tests}}
 add_test(NAME {{$testName}} COMMAND {{range $idx, $arg := $cmdLine}}{{$arg}}{{end}}){{end}}
 `
