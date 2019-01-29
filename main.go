@@ -104,11 +104,14 @@ type moduleInfo struct {
 // gModuleInfo is the global moduleInfo
 var gModuleInfo moduleInfo
 
+// gMKDep contains the dirname where we install deps
+var gMKDep = ".mkdep"
+
 // installCurlHaxxSeCa installs CURL's CA bundle
 func installCurlHaxxSeCa(dep string) {
 	log.Infof("install: %s", dep)
 	downloadAndVerify(
-		filepath.Join("dep", "curl.haxx.se", "ca", "ca-bundle.pem"),
+		filepath.Join(gMKDep, "curl.haxx.se", "ca", "ca-bundle.pem"),
 		"4d89992b90f3e177ab1d895c00e8cded6c9009bec9d56981ff4f0a59e9cc56d6",
 		"https://curl.haxx.se/ca/cacert-2018-12-05.pem",
 	)
@@ -118,24 +121,24 @@ func installCurlHaxxSeCa(dep string) {
 func installGithubcomAdishavitArgh(dep string) {
 	log.Infof("install: %s", dep)
 	downloadAndVerify(
-		filepath.Join("dep", "github.com", "adishavit", "argh", "argh.h"),
+		filepath.Join(gMKDep, "github.com", "adishavit", "argh", "argh.h"),
 		"ddb7dfc18dcf90149735b76fb2cff101067453a1df1943a6911233cb7085980c",
 		"https://raw.githubusercontent.com/adishavit/argh/v1.3.0/argh.h",
 	)
 	gModuleInfo.IncludeDirs = append(gModuleInfo.IncludeDirs,
-		filepath.Join("dep", "github.com", "adishavit", "argh"))
+		filepath.Join(gMKDep, "github.com", "adishavit", "argh"))
 }
 
 // installGithubcomCatchorgCatch2 installs github.com/catchorg/Catch2
 func installGithubcomCatchorgCatch2(dep string) {
 	log.Infof("install: %s", dep)
 	downloadAndVerify(
-		filepath.Join("dep", "github.com", "catchorg", "catch2", "catch.hpp"),
+		filepath.Join(gMKDep, "github.com", "catchorg", "Catch2", "catch.hpp"),
 		"5eb8532fd5ec0d28433eba8a749102fd1f98078c5ebf35ad607fb2455a000004",
 		"https://github.com/catchorg/Catch2/releases/download/v2.3.0/catch.hpp",
 	)
 	gModuleInfo.IncludeDirs = append(gModuleInfo.IncludeDirs,
-		filepath.Join("dep", "github.com", "catchorg", "Catch2"))
+		filepath.Join(gMKDep, "github.com", "catchorg", "Catch2"))
 }
 
 // installGithubcomCurlCurl installs github.com/curl/curl
@@ -149,12 +152,12 @@ func installGithubcomCurlCurl(dep string) {
 func installGithubcomMeasurementkitMkmock(dep string) {
 	log.Infof("install: %s", dep)
 	downloadAndVerify(
-		filepath.Join("dep", "github.com", "measurement-kit", "mkmock", "mkmock.hpp"),
+		filepath.Join(gMKDep, "github.com", "measurement-kit", "mkmock", "mkmock.hpp"),
 		"f07bc063a2e64484482f986501003e45ead653ea3f53fadbdb45c17a51d916d2",
 		"https://raw.githubusercontent.com/measurement-kit/mkmock/v0.2.0/mkmock.hpp",
 	)
 	gModuleInfo.IncludeDirs = append(gModuleInfo.IncludeDirs,
-		filepath.Join("dep", "github.com", "measurement-kit", "mkmock"))
+		filepath.Join(gMKDep, "github.com", "measurement-kit", "mkmock"))
 }
 
 // cmakeTemplate is the template for CMakeLists.txt
