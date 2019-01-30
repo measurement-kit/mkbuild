@@ -44,7 +44,7 @@ func subrAutogen() {
 		cmake.WriteLine(fmt.Sprintf(")"))
 	}
 	for name, arguments := range pkginfo.Tests {
-		rules.WriteSectionComment(cmake, "test: " + name)
+		rules.WriteSectionComment(cmake, "test: "+name)
 		cmake.WriteLine(fmt.Sprintf("add_test("))
 		cmake.WriteLine(fmt.Sprintf("  NAME %s COMMAND", name))
 		for _, arg := range arguments {
