@@ -9,7 +9,7 @@ import (
 )
 
 type buildInfo struct {
-	// Executables lists all the executabls to build read from MKBuild.yaml
+	// Executables lists all the executabls to build
 	Executables map[string][]string
 }
 
