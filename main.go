@@ -1,356 +1,57 @@
 package main
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
-	"strings"
 	"text/template"
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
-	"github.com/bassosimone/mkbuild/unzipx"
-	"gopkg.in/yaml.v2"
+	"github.com/bassosimone/mkbuild/cmake"
+	"github.com/bassosimone/mkbuild/pkginfo"
+	"github.com/bassosimone/mkbuild/rules"
 )
-
-// download will download |URL| in |filename|.
-func download(filename, URL string) {
-	dirname, _ := filepath.Split(filename)
-	if dirname != "" {
-		err := os.MkdirAll(dirname, 0755)
-		if err != nil {
-			log.WithError(err).Fatalf("MkdirAll failed for: %s", dirname)
-		}
-	}
-	filep, err := os.Create(filename)
-	if err != nil {
-		log.WithError(err).Fatalf("os.Create failed for: %s", filename)
-	}
-	defer filep.Close()
-	response, err := http.Get(URL)
-	if err != nil {
-		log.WithError(err).Fatalf("http.Get failed for: %s", URL)
-	}
-	defer response.Body.Close()
-	if response.StatusCode != 200 {
-		log.Fatalf("HTTP server response: %s; for URL: %s", response.Status, URL)
-	}
-	_, err = io.Copy(filep, response.Body)
-	if err != nil {
-		log.WithError(err).Fatalf("io.Copy failed for: %s", filename)
-	}
-}
-
-// verify will verify that |filename| has SHA256 equal to |SHA256|.
-func verify(filename, SHA256 string) {
-	filep, err := os.Open(filename)
-	if err != nil {
-		log.WithError(err).Fatalf("log.Open failed for: %s", filename)
-	}
-	defer filep.Close()
-	hash := sha256.New()
-	if _, err := io.Copy(hash, filep); err != nil {
-		log.WithError(err).Fatalf("io.Copy failed for: %s", filename)
-	}
-	result := hex.EncodeToString(hash.Sum(nil))
-	if result != SHA256 {
-		log.Fatalf("hash mismatch for: %s; sha256: %s", filename, SHA256)
-	}
-}
-
-// downloadAndVerify downloads |URL| in |filename| and verifies that
-// |filename| has SHA256 equal to |SHA256|.
-func downloadAndVerify(filename, SHA256, URL string) {
-	download(filename, URL)
-	verify(filename, SHA256)
-}
-
-// downloadVerifyAndUnzip downloads |URL| in |zipFilename|, verifies that
-// it has SHA256 equal to |SHA256, then unzips it in |destdir|.
-func downloadVerifyAndUnzip(zipFilename, destDir, SHA256, URL string) {
-	downloadAndVerify(zipFilename, SHA256, URL)
-	_, err := unzipx.Unzip(zipFilename, destDir)
-	if err != nil {
-		log.WithError(err).Fatalf("cannot unzip: %s", zipFilename)
-	}
-}
-
-// moduleInfo contains info on the module
-type moduleInfo struct {
-	// Name is the name of the module read from MKBuild.yaml
-	Name string `yaml:"name"`
-
-	// Dependencies are the module dependencies read from MKBuild.yaml
-	Dependencies []string `yaml:"dependencies"`
-
-	// Executables lists all the executabls to build read from MKBuild.yaml
-	Executables map[string][]string
-
-	// Tests contains information on the tests to run read from MKBuild.yaml
-	Tests map[string][]string
-
-	// IncludeDirs are the include directories computed by the code
-	// that installs all the dependencies
-	IncludeDirs []string
-
-	// IncludeDirsStr is the list of include directories formatted for
-	// cmake as computed by the code that writes CMakeLists.txt
-	IncludeDirsStr string
-
-	// LinkLibs are the link libraries computed by the code
-	// that installs all the dependencies
-	LinkLibs []string
-
-	// LinkLibsStr is the list of link libraries formatted for
-	// cmake as computed by the code that writes CMakeLists.txt
-	LinkLibsStr string
-}
-
-// gModuleInfo is the global moduleInfo
-var gModuleInfo moduleInfo
-
-// installCurlHaxxSeCa installs CURL's CA bundle
-func installCurlHaxxSeCa(dep string) {
-	log.Infof("install: %s", dep)
-	downloadAndVerify(
-		filepath.Join(".mkbuild", "dep", "curl.haxx.se", "ca", "ca-bundle.pem"),
-		"4d89992b90f3e177ab1d895c00e8cded6c9009bec9d56981ff4f0a59e9cc56d6",
-		"https://curl.haxx.se/ca/cacert-2018-12-05.pem",
-	)
-}
-
-// installGithubcomAdishavitArgh installs github.com/adishavit/argh
-func installGithubcomAdishavitArgh(dep string) {
-	log.Infof("install: %s", dep)
-	downloadAndVerify(
-		filepath.Join(".mkbuild", "dep", "github.com", "adishavit", "argh", "argh.h"),
-		"ddb7dfc18dcf90149735b76fb2cff101067453a1df1943a6911233cb7085980c",
-		"https://raw.githubusercontent.com/adishavit/argh/v1.3.0/argh.h",
-	)
-	gModuleInfo.IncludeDirs = append(gModuleInfo.IncludeDirs,
-		filepath.Join(".mkbuild", "dep", "github.com", "adishavit", "argh"))
-}
-
-// installGithubcomCatchorgCatch2 installs github.com/catchorg/Catch2
-func installGithubcomCatchorgCatch2(dep string) {
-	log.Infof("install: %s", dep)
-	downloadAndVerify(
-		filepath.Join(".mkbuild", "dep", "github.com", "catchorg", "Catch2", "catch.hpp"),
-		"5eb8532fd5ec0d28433eba8a749102fd1f98078c5ebf35ad607fb2455a000004",
-		"https://github.com/catchorg/Catch2/releases/download/v2.3.0/catch.hpp",
-	)
-	gModuleInfo.IncludeDirs = append(gModuleInfo.IncludeDirs,
-		filepath.Join(".mkbuild", "dep", "github.com", "catchorg", "Catch2"))
-}
-
-// installWinCurl downloads and verifies CURL's Windows zipfile for
-// |version|, |arch|, having |SHA256| as SHA256. This function will set
-// the proper IncludeDirs, LinkLibs, etc. as a side effect.
-func installWinCurl(version, arch, SHA256 string) {
-	prefix := filepath.Join(".mkbuild", "dep", "github.com", "curl", "curl")
-	name := fmt.Sprintf("curl-%s-%s-mingw", version, arch)
-	zipFile := fmt.Sprintf("%s.zip", name)
-	url := fmt.Sprintf("https://curl.haxx.se/windows/dl-%s/%s", version, zipFile)
-	downloadVerifyAndUnzip(
-		filepath.Join(prefix, zipFile), prefix, SHA256, url,
-	)
-	gModuleInfo.IncludeDirs = append(gModuleInfo.IncludeDirs,
-		filepath.Join(prefix, name, "include"))
-	gModuleInfo.LinkLibs = append(gModuleInfo.LinkLibs,
-		filepath.Join(prefix, name, "lib", "libcurl.dll.a"))
-}
-
-// installGithubcomCurlCurl installs github.com/curl/curl
-func installGithubcomCurlCurl(dep string) {
-	log.Infof("install: %s", dep)
-	// TODO(bassosimone): we should probably specify this property via
-	// command line. For example, `mkbuild autogen` will use the current
-	// runtime.GOOS and `mkbuild autogen win32` will use win32.
-	if runtime.GOOS != "windows" {
-		gModuleInfo.LinkLibs = append(gModuleInfo.LinkLibs, "-lcurl")
-		return
-	}
-	log.Warn("CURL support for Windows is still broken")
-	winCurlVersion := "7.63.0"
-	SHA256All := map[string]string{
-		"win32": "9bf0f3a4d6aab8d3db7af3ed6edef9c3b12022b36c32edaf9ac443caa8899f65",
-		"win64": "8795a1786a89607d0c52e3c0d8636aa29e4cf8c5b22a1dcb14ce6af0829b4814",
-	}
-	// TODO(bassosimone): the following is broken because we're setting
-	// both the 32 bit and the 64 bit libraries. However, if we'll use
-	// the command line, as mentioned above, the easy fix is to just use
-	// whatever is provided from command line to choose.
-	for arch, SHA256 := range SHA256All {
-		installWinCurl(winCurlVersion, arch, SHA256)
-	}
-}
-
-// installGithubcomMeasurementkitMkmock installs
-// github.com/measurement-kit/mkmock
-func installGithubcomMeasurementkitMkmock(dep string) {
-	log.Infof("install: %s", dep)
-	downloadAndVerify(
-		filepath.Join(".mkbuild", "dep", "github.com", "measurement-kit", "mkmock", "mkmock.hpp"),
-		"f07bc063a2e64484482f986501003e45ead653ea3f53fadbdb45c17a51d916d2",
-		"https://raw.githubusercontent.com/measurement-kit/mkmock/v0.2.0/mkmock.hpp",
-	)
-	gModuleInfo.IncludeDirs = append(gModuleInfo.IncludeDirs,
-		filepath.Join(".mkbuild", "dep", "github.com", "measurement-kit", "mkmock"))
-}
-
-// cmakeTemplate is the template for CMakeLists.txt
-var cmakeTemplate = `# Autogenerated by mkbuild
-cmake_minimum_required(VERSION 3.1.0)
-project({{.Name}})
-
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
-
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-
-if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") OR
-   ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Werror")
-  # https://www.owasp.org/index.php/C-Based_Toolchain_Hardening_Cheat_Sheet
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wall")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wextra")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wconversion")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wcast-align")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wformat=2")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wformat-security")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -fno-common")
-  # Some options are only supported by GCC when we're compiling C code:
-  if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wmissing-prototypes")
-    set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wstrict-prototypes")
-  else()
-    set(MK_C_FLAGS "${MK_C_FLAGS} -Wmissing-prototypes")
-    set(MK_C_FLAGS "${MK_C_FLAGS} -Wstrict-prototypes")
-  endif()
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wmissing-declarations")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wstrict-overflow")
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wtrampolines")
-  endif()
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Woverloaded-virtual")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wreorder")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wsign-promo")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -Wnon-virtual-dtor")
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} -fstack-protector-all")
-  if(NOT "${APPLE}")
-    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,noexecstack")
-    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,now")
-    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,relro")
-    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,nodlopen")
-    set(MK_LD_FLAGS "${MK_LD_FLAGS} -Wl,-z,nodump")
-  endif()
-  add_definitions(-D_FORTIFY_SOURCES=2)
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  # TODO(bassosimone): add support for /Wall and /analyze
-  set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} /WX /W4")
-  set(MK_LD_FLAGS "${MK_LD_FLAGS} /WX")
-else()
-  message(FATAL_ERROR "Compiler not supported: ${CMAKE_CXX_COMPILER_ID}")
-endif()
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MK_COMMON_FLAGS} ${MK_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MK_COMMON_FLAGS} ${MK_CXX_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MK_LD_FLAGS}")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${MK_LD_FLAGS}")
-if("${WIN32}")
-  add_definitions(-D_WIN32_WINNT=0x0600) # for NI_NUMERICSERV and WSAPoll
-endif()
-
-include_directories({{.IncludeDirsStr}})
-
-set(MK_LINK_LIBS {{.LinkLibsStr}})
-if("${WIN32}" OR "${MINGW}")
-  list(APPEND MK_LINK_LIBS "ws2_32")
-  if ("${MINGW}")
-      list(APPEND MK_LINK_LIBS -static-libgcc -static-libstdc++)
-  endif()
-endif()
-list(APPEND MK_LINK_LIBS Threads::Threads)
-link_libraries("${MK_LINK_LIBS}")
-
-if("${WIN32}")
-  compile_options(PRIVATE /EHs) # exceptions in extern "C"
-endif()
-
-enable_testing()
-{{range $exeName, $sources := .Executables}}
-add_executable({{$exeName}}{{range $idx, $src := $sources}} {{$src}}{{end}}){{end}}
-{{range $testName, $cmdLine := .Tests}}
-add_test(NAME {{$testName}} COMMAND {{range $idx, $arg := $cmdLine}}{{$arg}}{{end}}){{end}}
-`
-
-// writeCMakeListsTxt writes CMakeLists.txt in the current directory.
-func writeCMakeListsTxt() {
-	gModuleInfo.IncludeDirsStr = strings.Join(gModuleInfo.IncludeDirs, ";")
-	gModuleInfo.LinkLibsStr = strings.Join(gModuleInfo.LinkLibs, ";")
-	tmpl := template.Must(template.New("CMakeLists.txt").Parse(cmakeTemplate))
-	filename := "CMakeLists.txt"
-	filep, err := os.Create(filename)
-	if err != nil {
-		log.WithError(err).Fatalf("os.Open failed for: %s", filename)
-	}
-	defer filep.Close()
-	err = tmpl.Execute(filep, gModuleInfo)
-	if err != nil {
-		log.WithError(err).Fatalf("tmpl.Execute failed for: %s", filename)
-	}
-	log.Infof("Written %s", filename)
-}
-
-// initializeModuleInfo reads module info from MKBuild.toml
-func initializeModuleInfo() {
-	filename := "MKBuild.yaml"
-	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		log.WithError(err).Fatalf("cannot read %s", filename)
-	}
-	err = yaml.Unmarshal(data, &gModuleInfo)
-	if err != nil {
-		log.WithError(err).Fatalf("cannot unmarshal %s", filename)
-	}
-}
-
-// satisfyDeps satisfies the dependencies
-func satisfyDeps() {
-	for _, dep := range gModuleInfo.Dependencies {
-		if dep == "curl.haxx.se/ca" {
-			installCurlHaxxSeCa(dep)
-		} else if dep == "github.com/adishavit/argh" {
-			installGithubcomAdishavitArgh(dep)
-		} else if dep == "github.com/catchorg/catch2" {
-			installGithubcomCatchorgCatch2(dep)
-		} else if dep == "github.com/curl/curl" {
-			installGithubcomCurlCurl(dep)
-		} else if dep == "github.com/measurement-kit/mkmock" {
-			installGithubcomMeasurementkitMkmock(dep)
-		} else {
-			log.Fatalf("unknown dependency: %s", dep)
-		}
-	}
-}
 
 // subrAutogen implements the autogen behaviour.
 func subrAutogen() {
-	initializeModuleInfo()
-	satisfyDeps()
-	writeCMakeListsTxt()
+	pkginfo := pkginfo.Read()
+	cmake := cmake.Open(pkginfo.Name)
+	defer cmake.Close()
+	for _, depname := range pkginfo.Dependencies {
+		handler, ok := rules.Rules[depname]
+		if !ok {
+			log.Warnf("unknown dependency: %s", depname)
+			continue
+		}
+		handler(cmake)
+	}
+	rules.WriteSectionComment(cmake, "set restrictive compiler flags")
+	cmake.SetRestrictiveCompilerFlags()
+	rules.WriteSectionComment(cmake, "finalize compiler")
+	cmake.WriteLine("add_definitions(${CMAKE_REQUIRED_DEFINITIONS})")
+	cmake.WriteLine("include_directories(${CMAKE_REQUIRED_INCLUDES})")
+	cmake.WriteLine("link_libraries(${CMAKE_REQUIRED_LIBRARIES})")
+	cmake.WriteLine("enable_testing()")
+	for name, sources := range pkginfo.Build.Executables {
+		rules.WriteSectionComment(cmake, name)
+		cmake.WriteLine(fmt.Sprintf("add_executable("))
+		cmake.WriteLine(fmt.Sprintf("  %s", name))
+		for _, source := range sources {
+			cmake.WriteLine(fmt.Sprintf("  %s", source))
+		}
+		cmake.WriteLine(fmt.Sprintf(")"))
+	}
+	for name, arguments := range pkginfo.Tests {
+		rules.WriteSectionComment(cmake, "test: " + name)
+		cmake.WriteLine(fmt.Sprintf("add_test("))
+		cmake.WriteLine(fmt.Sprintf("  NAME %s COMMAND", name))
+		for _, arg := range arguments {
+			cmake.WriteLine(fmt.Sprintf("  %s", arg))
+		}
+		cmake.WriteLine(fmt.Sprintf(")"))
+	}
 }
 
 // runnerTemplate is the template runner.sh run in the container.
