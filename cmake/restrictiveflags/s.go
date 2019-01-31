@@ -41,7 +41,7 @@ var S = `macro(MkSetCompilerFlags)
     add_definitions(-D_FORTIFY_SOURCES=2)
   elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     # TODO(bassosimone): add support for /Wall and /analyze
-    set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} /WX /W4")
+    set(MK_COMMON_FLAGS "${MK_COMMON_FLAGS} /WX /W4 /EHs")
     set(MK_LD_FLAGS "${MK_LD_FLAGS} /WX")
   else()
     message(FATAL_ERROR "Compiler not supported: ${CMAKE_CXX_COMPILER_ID}")

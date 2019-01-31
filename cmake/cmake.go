@@ -14,11 +14,26 @@ import (
 type CMake struct {
 	// output contains the CMakeLists.txt lines
 	output strings.Builder
+
+	// indent is the indent string to prefix to each line
+	indent string
+}
+
+// WithIndent runs |func| with the specified |indent|.
+func (cmake *CMake) WithIndent(indent string, fn func()) {
+	oldIndent := cmake.indent
+	cmake.indent += indent
+	fn()
+	cmake.indent = oldIndent
 }
 
 // WriteLine writes a line to the CMakeLists.txt file.
 func (cmake *CMake) WriteLine(s string) {
-	_, err := cmake.output.WriteString(s)
+	_, err := cmake.output.WriteString(cmake.indent)
+	if err != nil {
+		log.WithError(err).Fatal("cannot write indent")
+	}
+	_, err = cmake.output.WriteString(s)
 	if err != nil {
 		log.WithError(err).Fatal("cannot write string")
 	}
@@ -49,7 +64,7 @@ func Open(name string) *CMake {
 	cmake.WriteLine("set(CMAKE_C_EXTENSIONS OFF)")
 	cmake.WriteLine("list(APPEND CMAKE_REQUIRED_LIBRARIES Threads::Threads)")
 	cmake.WriteLine("if(\"${WIN32}\")")
-	cmake.WriteLine("  list(APPEND CMAKE_REQUIRED_LIBRARIES -lws2_32)")
+	cmake.WriteLine("  list(APPEND CMAKE_REQUIRED_LIBRARIES ws2_32 crypt32)")
 	cmake.WriteLine("  if(\"${MINGW}\")")
 	cmake.WriteLine("    list(APPEND CMAKE_REQUIRED_LIBRARIES -static-libgcc -static-libstdc++)")
 	cmake.WriteLine("  endif()")

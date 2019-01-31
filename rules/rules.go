@@ -28,6 +28,15 @@ func downloadSingleHeader(cmake *cmake.CMake, headerName, guardVariable, SHA256,
 	cmake.WriteLine("")
 }
 
+// downloadWinCurl downloads curl for Windows
+func downloadWinCurl(cmake *cmake.CMake, filename, SHA256, URL string) {
+	dirname := filepath.Join("${CMAKE_BINARY_DIR}", ".mkbuild", "download")
+	filepathname := filepath.Join(dirname, filename)
+	cmake.MkdirAll(dirname)
+	cmake.Download(filepathname, SHA256, URL)
+	cmake.Untar(filepathname, dirname)
+}
+
 var Rules = map[string]func(*cmake.CMake){
 	"curl.haxx.se/ca": func(cmake *cmake.CMake) {
 		WriteSectionComment(cmake, "ca-bundle.pem")
@@ -53,9 +62,49 @@ var Rules = map[string]func(*cmake.CMake){
 	},
 	"github.com/curl/curl": func(cmake *cmake.CMake) {
 		WriteSectionComment(cmake, "libcurl")
-		cmake.CheckHeaderExists("curl/curl.h", "MK_HAVE_CURL_CURL_H", true)
-		cmake.CheckLibraryExists("curl", "curl_easy_init", "MK_HAVE_LIBCURL", true)
-		cmake.AddLibrary("-lcurl")
+		cmake.WriteLine("if((\"${WIN32}\"))")
+		cmake.WithIndent("  ", func() {
+			version := "7.61.1-1"
+			release := "testing"
+			baseURL := "https://github.com/measurement-kit/prebuilt/releases/download/"
+			URL := fmt.Sprintf("%s/%s/windows-curl-%s.tar.gz", baseURL, release, version)
+			downloadWinCurl(
+				cmake, "windows-curl.tar.gz",
+				"424d2f18f0f74dd6a0128f0f4e59860b7d2f00c80bbf24b2702e9cac661357cf",
+				URL,
+			)
+			cmake.WriteLine("if((\"${CMAKE_SIZEOF_VOID_P}\" EQUAL 4))")
+			cmake.WithIndent("  ", func() {
+				cmake.WriteLine("SET(MK_CURL_ARCH \"x86\")")
+			})
+			cmake.WriteLine("else()")
+			cmake.WithIndent("  ", func() {
+				cmake.WriteLine("SET(MK_CURL_ARCH \"x64\")")
+			})
+			cmake.WriteLine("endif()")
+			cmake.WriteLine("")
+			// E.g.: .mkbuild/download/MK_DIST/windows/curl/7.61.1-1/x86/lib/
+			curldir := filepath.Join(
+				"${CMAKE_BINARY_DIR}", ".mkbuild", "download", "MK_DIST",
+				"windows", "curl", version, "${MK_CURL_ARCH}",
+			)
+			includedirname := filepath.Join(curldir, "include")
+			libname := filepath.Join(curldir, "lib", "libcurl.lib")
+			cmake.AddIncludeDir(includedirname)
+			cmake.CheckHeaderExists("curl/curl.h", "MK_HAVE_CURL_CURL_H", true)
+			cmake.WriteLine("")
+			cmake.CheckLibraryExists(libname, "curl_easy_init", "MK_HAVE_LIBCURL", true)
+			cmake.AddLibrary(libname)
+			cmake.AddDefinition("-DCURL_STATICLIB")
+		})
+		cmake.WriteLine("")
+		cmake.WriteLine("else()")
+		cmake.WithIndent(" ", func() {
+			cmake.CheckHeaderExists("curl/curl.h", "MK_HAVE_CURL_CURL_H", true)
+			cmake.CheckLibraryExists("curl", "curl_easy_init", "MK_HAVE_LIBCURL", true)
+			cmake.AddLibrary("curl")
+		})
+		cmake.WriteLine("endif()")
 	},
 	"github.com/measurement-kit/mkmock": func(cmake *cmake.CMake) {
 		downloadSingleHeader(cmake, "mkmock.hpp", "MK_HAVE_MKMOCK_HPP",
