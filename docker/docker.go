@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"text/template"
 
 	"github.com/apex/log"
@@ -80,13 +79,6 @@ fi
 
 // writeDockerRunner writes the docker runner script.
 func writeDockerRunner(buildType string) {
-	for _, e := range os.Environ() {
-		v := strings.SplitN(e, "=", 2)
-		if strings.Contains(v[0], "TOKEN") {
-			v[1] = "[SECURE]"
-		}
-		log.Debugf("env: %s=%s", v[0], v[1])
-	}
 	tmpl := template.Must(template.New("runner.sh").Parse(runnerTemplate))
 	dirname := filepath.Join(".mkbuild", "script")
 	err := os.MkdirAll(dirname, 0755)
