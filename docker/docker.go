@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"text/template"
 
 	"github.com/apex/log"
@@ -80,12 +79,12 @@ fi
 // writeDockerRunner writes the docker runner script.
 func writeDockerRunner(buildType string) {
 	tmpl := template.Must(template.New("runner.sh").Parse(runnerTemplate))
-	dirname := filepath.Join(".mkbuild", "script")
+	dirname := ".mkbuild/script"
 	err := os.MkdirAll(dirname, 0755)
 	if err != nil {
 		log.WithError(err).Fatalf("cannot create dir: %s", dirname)
 	}
-	filename := filepath.Join(dirname, "runner.sh")
+	filename := dirname + "/runner.sh"
 	filep, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
 	if err != nil {
 		log.WithError(err).Fatalf("cannot open file: %s", filename)

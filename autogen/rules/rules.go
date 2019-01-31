@@ -3,7 +3,6 @@ package rules
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/bassosimone/mkbuild/autogen/cmake"
 )
@@ -20,8 +19,8 @@ func WriteSectionComment(cmake *cmake.CMake, name string) {
 // downloadSingleHeader downloads a library consisting of a single header.
 func downloadSingleHeader(cmake *cmake.CMake, headerName, guardVariable, SHA256, URL string) {
 	WriteSectionComment(cmake, headerName)
-	dirname := filepath.Join("${CMAKE_BINARY_DIR}", ".mkbuild", "include")
-	filename := filepath.Join(dirname, headerName)
+	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/include"
+	filename := dirname + "/" + headerName
 	cmake.MkdirAll(dirname)
 	cmake.Download(filename, SHA256, URL)
 	cmake.AddIncludeDir(dirname)
@@ -31,8 +30,8 @@ func downloadSingleHeader(cmake *cmake.CMake, headerName, guardVariable, SHA256,
 
 // downloadWinCurl downloads curl for Windows
 func downloadWinCurl(cmake *cmake.CMake, filename, SHA256, URL string) {
-	dirname := filepath.Join("${CMAKE_BINARY_DIR}", ".mkbuild", "download")
-	filepathname := filepath.Join(dirname, filename)
+	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/download"
+	filepathname := dirname + "/" + filename
 	cmake.MkdirAll(dirname)
 	cmake.Download(filepathname, SHA256, URL)
 	cmake.Untar(filepathname, dirname)
@@ -42,8 +41,8 @@ func downloadWinCurl(cmake *cmake.CMake, filename, SHA256, URL string) {
 var Rules = map[string]func(*cmake.CMake){
 	"curl.haxx.se/ca": func(cmake *cmake.CMake) {
 		WriteSectionComment(cmake, "ca-bundle.pem")
-		dirname := filepath.Join("${CMAKE_BINARY_DIR}", ".mkbuild", "etc")
-		filename := filepath.Join(dirname, "ca-bundle.pem")
+		dirname := "${CMAKE_BINARY_DIR}/.mkbuild/etc"
+		filename := dirname + "/ca-bundle.pem"
 		cmake.MkdirAll(dirname)
 		cmake.Download(
 			filename, "4d89992b90f3e177ab1d895c00e8cded6c9009bec9d56981ff4f0a59e9cc56d6",
@@ -85,13 +84,9 @@ var Rules = map[string]func(*cmake.CMake){
 			})
 			cmake.WriteLine("endif()")
 			cmake.WriteLine("")
-			// E.g.: .mkbuild/download/MK_DIST/windows/curl/7.61.1-1/x86/lib/
-			curldir := filepath.Join(
-				"${CMAKE_BINARY_DIR}", ".mkbuild", "download", "MK_DIST",
-				"windows", "curl", version, "${MK_CURL_ARCH}",
-			)
-			includedirname := filepath.Join(curldir, "include")
-			libname := filepath.Join(curldir, "lib", "libcurl.lib")
+			curldir := "${CMAKE_BINARY_DIR}/.mkbuild/download/MK_DIST/windows/curl/" + version + "/${MK_CURL_ARCH}"
+			includedirname := curldir + "/include"
+			libname := curldir + "/lib/libcurl.lib"
 			cmake.AddIncludeDir(includedirname)
 			cmake.CheckHeaderExists("curl/curl.h", "MK_HAVE_CURL_CURL_H", true)
 			cmake.WriteLine("")
