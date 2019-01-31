@@ -15,8 +15,8 @@ import (
 // runnerTemplate is the template runner.sh run in the container.
 var runnerTemplate = `#!/bin/sh -e
 BUILD_TYPE="{{.BUILD_TYPE}}"
-CODECOV_TOKEN="{{.CODECOV_TOKEN}}"
-TRAVIS_BRANCH="{{.TRAVIS_BRANCH}}"
+export CODECOV_TOKEN="{{.CODECOV_TOKEN}}"
+export TRAVIS_BRANCH="{{.TRAVIS_BRANCH}}"
 set -x
 
 # Build the latest mkbuild for the docker container
