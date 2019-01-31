@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/bassosimone/mkbuild/cmake"
+	"github.com/bassosimone/mkbuild/autogen/cmake"
 )
 
 // WriteSectionComment writes a comment for |name| in |cmake|.

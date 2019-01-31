@@ -9,50 +9,8 @@ import (
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
-	"github.com/bassosimone/mkbuild/cmake"
-	"github.com/bassosimone/mkbuild/pkginfo"
-	"github.com/bassosimone/mkbuild/rules"
+	"github.com/bassosimone/mkbuild/autogen"
 )
-
-// subrAutogen implements the autogen behaviour.
-func subrAutogen() {
-	pkginfo := pkginfo.Read()
-	cmake := cmake.Open(pkginfo.Name)
-	defer cmake.Close()
-	for _, depname := range pkginfo.Dependencies {
-		handler, ok := rules.Rules[depname]
-		if !ok {
-			log.Warnf("unknown dependency: %s", depname)
-			continue
-		}
-		handler(cmake)
-	}
-	rules.WriteSectionComment(cmake, "set restrictive compiler flags")
-	cmake.SetRestrictiveCompilerFlags()
-	rules.WriteSectionComment(cmake, "finalize compiler")
-	cmake.WriteLine("add_definitions(${CMAKE_REQUIRED_DEFINITIONS})")
-	cmake.WriteLine("include_directories(${CMAKE_REQUIRED_INCLUDES})")
-	cmake.WriteLine("link_libraries(${CMAKE_REQUIRED_LIBRARIES})")
-	cmake.WriteLine("enable_testing()")
-	for name, sources := range pkginfo.Build.Executables {
-		rules.WriteSectionComment(cmake, name)
-		cmake.WriteLine(fmt.Sprintf("add_executable("))
-		cmake.WriteLine(fmt.Sprintf("  %s", name))
-		for _, source := range sources {
-			cmake.WriteLine(fmt.Sprintf("  %s", source))
-		}
-		cmake.WriteLine(fmt.Sprintf(")"))
-	}
-	for name, arguments := range pkginfo.Tests {
-		rules.WriteSectionComment(cmake, "test: "+name)
-		cmake.WriteLine(fmt.Sprintf("add_test("))
-		cmake.WriteLine(fmt.Sprintf("  NAME %s COMMAND", name))
-		for _, arg := range arguments {
-			cmake.WriteLine(fmt.Sprintf("  %s", arg))
-		}
-		cmake.WriteLine(fmt.Sprintf(")"))
-	}
-}
 
 // runnerTemplate is the template runner.sh run in the container.
 var runnerTemplate = `#!/bin/sh -e
@@ -164,7 +122,7 @@ func main() {
 	log.SetHandler(cli.Default)
 	log.SetLevel(log.DebugLevel)
 	if len(os.Args) == 2 && os.Args[1] == "autogen" {
-		subrAutogen()
+		autogen.Autogen()
 	} else if len(os.Args) == 3 && os.Args[1] == "docker" {
 		subrDocker(os.Args[2])
 	} else {

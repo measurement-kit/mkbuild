@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/bassosimone/mkbuild/cmake/restrictiveflags"
+	"github.com/bassosimone/mkbuild/autogen/cmake/restrictiveflags"
 )
 
 // CMake is the CMake driver
