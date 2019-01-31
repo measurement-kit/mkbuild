@@ -1,3 +1,4 @@
+// Package rules contains the build rules.
 package rules
 
 import (
@@ -37,6 +38,7 @@ func downloadWinCurl(cmake *cmake.CMake, filename, SHA256, URL string) {
 	cmake.Untar(filepathname, dirname)
 }
 
+// Rules contains all the build rules that we know of.
 var Rules = map[string]func(*cmake.CMake){
 	"curl.haxx.se/ca": func(cmake *cmake.CMake) {
 		WriteSectionComment(cmake, "ca-bundle.pem")

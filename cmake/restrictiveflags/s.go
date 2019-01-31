@@ -1,6 +1,7 @@
 // Package restrictiveflags allows to set restrictive compiler flags
 package restrictiveflags
 
+// S contains a CMake macro to set restrictiv compiler flags
 var S = `macro(MkSetCompilerFlags)
   if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") OR
      ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
