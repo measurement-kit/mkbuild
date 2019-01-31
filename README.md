@@ -101,7 +101,13 @@ having to keep the submodules up to date, like we do, e.g., in `mkcurl`, one
 `go get`s the latest `mkbuild` during a build to obtain the same result.
 
 The main difference is that there is no need to keep in sync all the submodules
-of the many small repositories I've created in `gitub.com/measurement-kit`.
+of the many small repositories I've created in `gitub.com/measurement-kit`. More
+details in the following subsections.
+
+Also, even in case I'm doing it wrong, still it's possible to cut
+this tool of the build by commiting the `CMakeLists.txt`. Also,
+in case we want to have ready-to-use tarballs for release (I doubt
+it), we can generate a tarball with a `CMakeLists.txt` in it.
 
 ## Travis CI
 
@@ -132,12 +138,7 @@ script:
 ```
 
 It only minimally more complex than what was required by `ci-common`
-and `cmake-modules`. More details in the following subsections.
-
-Also, even in case I'm doing it wrong, still it's possible to cut
-this tool of the build by commiting the `CMakeLists.txt`. Also,
-in case we want to have ready-to-use tarballs for release (I doubt
-it), we can generate a tarball with a `CMakeLists.txt` in it.
+and `cmake-modules`.
 
 ## AppVeyor
 
