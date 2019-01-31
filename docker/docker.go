@@ -39,6 +39,8 @@ if [ "$BUILD_TYPE" = "asan" ]; then
 elif [ "$BUILD_TYPE" = "clang" ]; then
   export CMAKE_BUILD_TYPE="Release"
   export CXXFLAGS="-stdlib=libc++"
+  export CC=clang
+  export CXX=clang++
 
 elif [ "$BUILD_TYPE" = "coverage" ]; then
   export CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
