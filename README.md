@@ -132,7 +132,12 @@ script:
 ```
 
 It only minimally more complex than what was required by `ci-common`
-and `cmake-modules`.
+and `cmake-modules`. More details in the following subsections.
+
+Also, even in case I'm doing it wrong, still it's possible to cut
+this tool of the build by commiting the `CMakeLists.txt`. Also,
+in case we want to have ready-to-use tarballs for release (I doubt
+it), we can generate a tarball with a `CMakeLists.txt` in it.
 
 ## AppVeyor
 
