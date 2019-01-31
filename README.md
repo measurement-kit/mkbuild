@@ -1,6 +1,6 @@
 # MKBuild
 
-MKBuild is (1) generates a complex `CMakeLists.txt` from a simpler YAML based
+MKBuild (1) generates a complex `CMakeLists.txt` from a simpler YAML based
 definition of the build and (2) allows to easily run a specific build using
 Docker to perform the build and testing in a specific container.
 
