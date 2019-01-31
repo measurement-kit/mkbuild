@@ -158,3 +158,8 @@ build_script:
 
 It only minimally more complex than what was required by `ci-common`
 and `cmake-modules`.
+
+## Next steps
+
+If testing proves that this is really more convenient, I will
+most likely migrate it into the `measurement-kit` namespace.
