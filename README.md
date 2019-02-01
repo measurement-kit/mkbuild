@@ -104,7 +104,7 @@ The main difference is that there is no need to keep in sync all the submodules
 of the many small repositories I've created in `gitub.com/measurement-kit`. More
 details in the following subsections.
 
-Also, even in case I'm doing it wrong, still it's possible to cut
+Also, even in case I'm doing it wrong, it's still possible to cut
 this tool of the build by commiting the `CMakeLists.txt`. Also,
 in case we want to have ready-to-use tarballs for release (I doubt
 it), we can generate a tarball with a `CMakeLists.txt` in it.
