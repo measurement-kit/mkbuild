@@ -100,8 +100,8 @@ func writeDockerRunner(buildType string) {
 	}
 }
 
-// Docker implements the docker behaviour.
-func Docker(buildType string) {
+// Run implements the docker behaviour.
+func Run(buildType string) {
 	writeDockerRunner(buildType)
 	cwd, err := os.Getwd()
 	if err != nil {

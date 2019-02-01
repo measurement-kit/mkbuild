@@ -10,8 +10,8 @@ import (
 	"github.com/bassosimone/mkbuild/autogen/rules"
 )
 
-// Autogen implements the autogen behaviour.
-func Autogen() {
+// Run implements the autogen behaviour.
+func Run() {
 	pkginfo := pkginfo.Read()
 	cmake := cmake.Open(pkginfo.Name)
 	defer cmake.Close()
