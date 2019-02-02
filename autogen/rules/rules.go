@@ -39,15 +39,15 @@ var Rules = map[string]func(*cmake.CMake){
 					"testing",
 					version,
 				),
-				Prefix: "MK_DIST/windows/curl/"+version,
+				Prefix:     "MK_DIST/windows/curl/" + version,
 				HeaderName: "curl/curl.h",
-				LibName: "libcurl.lib",
-				FuncName: "curl_easy_init",
+				LibName:    "libcurl.lib",
+				FuncName:   "curl_easy_init",
 			})
 			cmake.AddDefinition("-DCURL_STATICLIB")
 		}, func() {
-			cmake.CheckHeaderExists("curl/curl.h", "MK_HAVE_CURL_CURL_H", true)
-			cmake.CheckLibraryExists("curl", "curl_easy_init", "MK_HAVE_LIBCURL", true)
+			cmake.RequireHeaderExists("curl/curl.h")
+			cmake.RequireLibraryExists("curl", "curl_easy_init")
 			cmake.AddLibrary("curl")
 		})
 	},
