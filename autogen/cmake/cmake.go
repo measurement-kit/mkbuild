@@ -353,6 +353,12 @@ func (cmake *CMake) DownloadAndExtractArchive(SHA256, URL string) {
 	cmake.Untar(filepathname, dirname)
 }
 
+// FinalizeCompilerFlags finalizes compiler flags
+func (cmake *CMake) FinalizeCompilerFlags() {
+	cmake.SetRestrictiveCompilerFlags()
+	cmake.PrepareForCompilingTargets()
+}
+
 // Close writes CMakeLists.txt in the current directory.
 func (cmake *CMake) Close() {
 	filename := "CMakeLists.txt"

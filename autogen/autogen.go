@@ -19,8 +19,7 @@ func Run(pkginfo *pkginfo.PkgInfo) {
 		}
 		handler(cmake)
 	}
-	cmake.SetRestrictiveCompilerFlags()
-	cmake.PrepareForCompilingTargets()
+	cmake.FinalizeCompilerFlags()
 	for name, buildinfo := range pkginfo.Targets.Libraries {
 		cmake.BuildLibrary(name, buildinfo.Compile, buildinfo.Link)
 	}

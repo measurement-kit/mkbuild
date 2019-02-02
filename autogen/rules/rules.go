@@ -29,7 +29,6 @@ var Rules = map[string]func(*cmake.CMake){
 		)
 	},
 	"github.com/curl/curl": func(cmake *cmake.CMake) {
-		cmake.WriteSectionComment("libcurl")
 		cmake.IfWIN32(func() {
 			version := "7.61.1-1"
 			cmake.Win32InstallPrebuilt(&prebuilt.Info{
