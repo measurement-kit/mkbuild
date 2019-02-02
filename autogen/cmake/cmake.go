@@ -235,7 +235,7 @@ func (cmake *CMake) BuildExecutable(name string, sources []string, libs []string
 	cmake.targetLinkLibraries(name, libs)
 }
 
-// BuildLibrary defines a static library to be compiled.
+// BuildLibrary defines a library to be compiled.
 func (cmake *CMake) BuildLibrary(name string, sources []string, libs []string) {
 	cmake.writeSectionComment(name)
 	cmake.writeLine(fmt.Sprintf("add_library("))
