@@ -253,6 +253,7 @@ func (cmake *CMake) AddTest(name string, arguments []string) {
 	cmake.WriteLine(fmt.Sprintf(")"))
 }
 
+// AddSingleHeaderDependency adds a single-header dependency
 func (cmake *CMake) AddSingleHeaderDependency(SHA256, URL string) {
 	headerName := filepath.Base(URL)
 	cmake.WriteSectionComment(headerName)
@@ -263,6 +264,16 @@ func (cmake *CMake) AddSingleHeaderDependency(SHA256, URL string) {
 	cmake.AddIncludeDir(dirname)
 	guardVariable := "MK_HAVE_" + strings.ToUpper(strings.Replace(headerName, ".", "_", -1))
 	cmake.CheckHeaderExists(headerName, guardVariable, true)
+}
+
+// AddSingleFileAsset adds a single-file asset to the build
+func (cmake *CMake) AddSingleFileAsset(SHA256, URL string) {
+	assetName := filepath.Base(URL)
+	cmake.WriteSectionComment(assetName)
+	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/data"
+	filename := dirname + "/" + assetName
+	cmake.MkdirAll(dirname)
+	cmake.Download(filename, SHA256, URL)
 }
 
 // Close writes CMakeLists.txt in the current directory.

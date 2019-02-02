@@ -19,13 +19,9 @@ func downloadWinCurl(cmake *cmake.CMake, filename, SHA256, URL string) {
 // Rules contains all the build rules that we know of.
 var Rules = map[string]func(*cmake.CMake){
 	"curl.haxx.se/ca": func(cmake *cmake.CMake) {
-		cmake.WriteSectionComment("ca-bundle.pem")
-		dirname := "${CMAKE_BINARY_DIR}/.mkbuild/etc"
-		filename := dirname + "/ca-bundle.pem"
-		cmake.MkdirAll(dirname)
-		cmake.Download(
-			filename, "4d89992b90f3e177ab1d895c00e8cded6c9009bec9d56981ff4f0a59e9cc56d6",
-			"https://curl.haxx.se/ca/cacert-2018-12-05.pem",
+		cmake.AddSingleFileAsset(
+			"4d89992b90f3e177ab1d895c00e8cded6c9009bec9d56981ff4f0a59e9cc56d6",
+			"https://curl.haxx.se/ca/cacert.pem",
 		)
 	},
 	"github.com/adishavit/argh": func(cmake *cmake.CMake) {
