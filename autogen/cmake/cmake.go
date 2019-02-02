@@ -120,9 +120,9 @@ func (cmake *CMake) checkCommandError() {
 	cmake.writeLine(fmt.Sprintf("endif()"))
 }
 
-// MkdirAll creates |destdirs|.
-func (cmake *CMake) MkdirAll(destdirs string) {
-	cmake.writeLine(fmt.Sprintf("message(STATUS \"MkdirAll: %s\")", destdirs))
+// mkdirAll creates |destdirs|.
+func (cmake *CMake) mkdirAll(destdirs string) {
+	cmake.writeLine(fmt.Sprintf("message(STATUS \"mkdirAll: %s\")", destdirs))
 	cmake.writeLine(fmt.Sprintf("execute_process(COMMAND"))
 	cmake.writeLine(fmt.Sprintf(
 		"  ${CMAKE_COMMAND} -E make_directory \"%s\"", destdirs,
@@ -131,8 +131,8 @@ func (cmake *CMake) MkdirAll(destdirs string) {
 	cmake.checkCommandError()
 }
 
-// Unzip extracts |filename| in |destdir|.
-func (cmake *CMake) Unzip(filename, destdir string) {
+// unzip extracts |filename| in |destdir|.
+func (cmake *CMake) unzip(filename, destdir string) {
 	cmake.writeLine(fmt.Sprintf("message(STATUS \"Extract: %s\")", filename))
 	cmake.writeLine(fmt.Sprintf("execute_process(COMMAND"))
 	cmake.writeLine(fmt.Sprintf(
@@ -143,9 +143,9 @@ func (cmake *CMake) Unzip(filename, destdir string) {
 	cmake.checkCommandError()
 }
 
-// Untar extracts |filename| in |destdir|.
-func (cmake *CMake) Untar(filename, destdir string) {
-	cmake.Unzip(filename, destdir)
+// untar extracts |filename| in |destdir|.
+func (cmake *CMake) untar(filename, destdir string) {
+	cmake.unzip(filename, destdir)
 }
 
 // AddDefinition adds |definition| to the macro definitions
@@ -262,7 +262,7 @@ func (cmake *CMake) AddSingleHeaderDependency(SHA256, URL string) {
 	cmake.writeSectionComment(headerName)
 	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/include"
 	filename := dirname + "/" + headerName
-	cmake.MkdirAll(dirname)
+	cmake.mkdirAll(dirname)
 	cmake.download(filename, SHA256, URL)
 	cmake.AddIncludeDir(dirname)
 	cmake.RequireHeaderExists(headerName)
@@ -274,7 +274,7 @@ func (cmake *CMake) AddSingleFileAsset(SHA256, URL string) {
 	cmake.writeSectionComment(assetName)
 	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/data"
 	filename := dirname + "/" + assetName
-	cmake.MkdirAll(dirname)
+	cmake.mkdirAll(dirname)
 	cmake.download(filename, SHA256, URL)
 }
 
@@ -323,10 +323,10 @@ func (cmake *CMake) downloadAndExtractArchive(SHA256, URL string) {
 	cmake.writeSectionComment(archiveName)
 	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/download"
 	filename := dirname + "/" + archiveName
-	cmake.MkdirAll(dirname)
+	cmake.mkdirAll(dirname)
 	cmake.download(filename, SHA256, URL)
 	filepathname := dirname + "/" + archiveName
-	cmake.Untar(filepathname, dirname)
+	cmake.untar(filepathname, dirname)
 }
 
 // FinalizeCompilerFlags finalizes compiler flags
