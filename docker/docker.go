@@ -22,7 +22,7 @@ export GOPATH=/go
 install -d $GOPATH
 go get -v github.com/bassosimone/mkbuild
 cd /mk
-env|grep -v TOKEN|sort
+env | grep -v TOKEN | sort
 $GOPATH/bin/mkbuild autogen
 
 # Make sure we don't consume too much resources by bumping latency
