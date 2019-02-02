@@ -230,17 +230,41 @@ func (cmake *CMake) PrepareForCompilingTargets() {
 	cmake.WriteSectionComment("Prepare for compiling targets")
 	cmake.WriteLine("add_definitions(${CMAKE_REQUIRED_DEFINITIONS})")
 	cmake.WriteLine("include_directories(${CMAKE_REQUIRED_INCLUDES})")
-	cmake.WriteLine("link_libraries(${CMAKE_REQUIRED_LIBRARIES})")
 }
 
-// AddExecutable defines an executable to be compiled.
-func (cmake *CMake) AddExecutable(name string, sources []string) {
+// BuildExecutable defines an executable to be compiled.
+func (cmake *CMake) BuildExecutable(name string, sources []string, libs []string) {
 	cmake.WriteSectionComment(name)
 	cmake.WriteLine(fmt.Sprintf("add_executable("))
 	cmake.WriteLine(fmt.Sprintf("  %s", name))
 	for _, source := range sources {
 		cmake.WriteLine(fmt.Sprintf("  %s", source))
 	}
+	cmake.WriteLine(fmt.Sprintf(")"))
+	cmake.WriteLine(fmt.Sprintf("target_link_libraries("))
+	cmake.WriteLine(fmt.Sprintf("  %s", name))
+	for _, lib := range libs {
+		cmake.WriteLine(fmt.Sprintf("  %s", lib))
+	}
+	cmake.WriteLine(fmt.Sprintf("  ${CMAKE_REQUIRED_LIBRARIES}"))
+	cmake.WriteLine(fmt.Sprintf(")"))
+}
+
+// BuildLibrary defines a static library to be compiled.
+func (cmake *CMake) BuildLibrary(name string, sources []string, libs []string) {
+	cmake.WriteSectionComment(name)
+	cmake.WriteLine(fmt.Sprintf("add_library("))
+	cmake.WriteLine(fmt.Sprintf("  %s", name))
+	for _, source := range sources {
+		cmake.WriteLine(fmt.Sprintf("  %s", source))
+	}
+	cmake.WriteLine(fmt.Sprintf(")"))
+	cmake.WriteLine(fmt.Sprintf("target_link_libraries("))
+	cmake.WriteLine(fmt.Sprintf("  %s", name))
+	for _, lib := range libs {
+		cmake.WriteLine(fmt.Sprintf("  %s", lib))
+	}
+	cmake.WriteLine(fmt.Sprintf("  ${CMAKE_REQUIRED_LIBRARIES}"))
 	cmake.WriteLine(fmt.Sprintf(")"))
 }
 

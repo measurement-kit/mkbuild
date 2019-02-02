@@ -9,23 +9,34 @@ import (
 )
 
 type buildInfo struct {
+	// Compile lists all the sources to compile
+	Compile []string
+
+	// Link lists all the libraries to link
+	Link []string
+}
+
+type targetInfo struct {
+	// Libraries lists all the libraries to build
+	Libraries map[string]buildInfo
+
 	// Executables lists all the executabls to build
-	Executables map[string][]string
+	Executables map[string]buildInfo
 }
 
 // PkgInfo contains information on a package
 type PkgInfo struct {
 	// Name is the name of the package
-	Name string `yaml:"name"`
+	Name string
 
 	// Dependencies are the package dependencies
-	Dependencies []string `yaml:"dependencies"`
+	Dependencies []string
 
-	// Build contains information on what we need to build
-	Build buildInfo `yaml:"build"`
+	// Targets contains information on what we need to build
+	Targets targetInfo
 
 	// Tests contains information on the tests to run
-	Tests map[string][]string `yaml:"tests"`
+	Tests map[string][]string
 }
 
 // Read reads package info from "MKBuild.yaml"

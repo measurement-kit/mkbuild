@@ -16,43 +16,69 @@ Create a YAML file named `MKBuild.yaml` in the toplevel directory of your
 project and write inside it something similar to:
 
 ```YAML
-name: "mkcurl"
+name: mkcurl
 
 dependencies:
-- "curl.haxx.se/ca"
-- "github.com/measurement-kit/mkmock"
-- "github.com/adishavit/argh"
-- "github.com/catchorg/catch2"
-- "github.com/curl/curl"
+- curl.haxx.se/ca
+- github.com/adishavit/argh
+- github.com/catchorg/catch2
+- github.com/curl/curl
+- github.com/measurement-kit/mkmock
 
-build:
+targets:
+  libraries:
+    mkcurl:
+      compile: [mkcurl.cpp]
   executables:
     mkcurl-client:
-      - mkcurl.cpp
-      - mkcurl-client.cpp
+      compile: [mkcurl-client.cpp]
+      link: [mkcurl]
     tests:
-      - tests.cpp
+      compile: [tests.cpp]
+    integration-tests:
+      compile: [integration-tests.cpp]
+      link: [mkcurl]
 
 tests:
-  unit_tests:
+  mocked_tests:
   - tests
   integration_tests:
-  - mkcurl-client https://www.kernel.org/
+  - integration-tests
+  external_ca:
+  - mkcurl-client --ca-bundle-path ./.mkbuild/etc/ca-bundle.pem
+    https://www.kernel.org
+  http11_test:
+  - mkcurl-client https://ooni.torproject.org
+  using_timeout:
+  - mkcurl-client --timeout 10 --follow-redirect https://www.facebook.com
+  redirect_test:
+  - mkcurl-client --follow-redirect http://google.com
+  post:
+  - mkcurl-client --post --data "{\"net-tests\":[]}" https://httpbin.org/post
+  put:
+  - mkcurl-client --put --data "{\"net-tests\":[]}" https://httpbin.org/put
+  connect_to:
+  - mkcurl-client --connect-to www.google.com https://www.youtube.com
 ```
 
 Where `name` is the name of the project, `dependencies` is a list containing
-the IDs of the dependencies you want to download and install, `build` tells
+the IDs of the dependencies you want to download and install, `targets` tells
 us what artifacts you want to build, and `tests` what tests to execute.
 
 See `autogen/rules/rules.go` for all the available IDs. Dependencies that
 are libraries will be automatically downloaded for Windows, but must be
 installed on Unix. If a dependency is not installed on Unix, the related
 `cmake` check will fail when running `cmake` later on. The build flags will
-be automatically adjusted to account for the dependencies.
+be automatically adjusted to account for finding the dependencies headers
+and for automatically linking all targets with dependencies.
 
-The `executables` key specifically indicates what executables to build. Each
-key inside `executables` is the name of a binary and maps to a list of source
-files to be compiled to obtain such binary.
+The `libraries` key specifies what libraries to build and the `executables`
+key what executables to build. Both contain targets names mapping to build
+information for a target. The build information is composed of two keys,
+`compile`, which indicates which sources to compile, and `link`, which
+indicates which _extra_ libraries to link. If you're building, like in the
+above example, a library named `foo`, you can refer to it later in the
+`link` section of another target simply as `foo`.
 
 The `tests` indicates what test to run. Each key inside `tests` is the name
 of a test. Each key maps to a list of arguments to be passed to a test. It's
