@@ -8,7 +8,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type buildInfo struct {
+// BuildInfo contains info on building a target
+type BuildInfo struct {
 	// Compile lists all the sources to compile
 	Compile []string
 
@@ -16,15 +17,17 @@ type buildInfo struct {
 	Link []string
 }
 
-type targetInfo struct {
+// TargetsInfo contains info on all targets
+type TargetsInfo struct {
 	// Libraries lists all the libraries to build
-	Libraries map[string]buildInfo
+	Libraries map[string]BuildInfo
 
 	// Executables lists all the executabls to build
-	Executables map[string]buildInfo
+	Executables map[string]BuildInfo
 }
 
-type testInfo struct {
+// TestInfo contains info on a test
+type TestInfo struct {
 	// Command is the command to execute
 	Command string
 }
@@ -38,10 +41,10 @@ type PkgInfo struct {
 	Dependencies []string
 
 	// Targets contains information on what we need to build
-	Targets targetInfo
+	Targets TargetsInfo
 
 	// Tests contains information on the tests to run
-	Tests map[string]testInfo
+	Tests map[string]TestInfo
 }
 
 // Read reads package info from "MKBuild.yaml"
