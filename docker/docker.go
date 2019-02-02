@@ -76,8 +76,8 @@ if [ "$BUILD_TYPE" = "coverage" ]; then
 fi
 `
 
-// writeDockerRunner writes the docker runner script.
-func writeDockerRunner(buildType string) {
+// writeDockerRunnerScript writes the docker runner script.
+func writeDockerRunnerScript(buildType string) {
 	tmpl := template.Must(template.New("runner.sh").Parse(runnerTemplate))
 	dirname := ".mkbuild/script"
 	err := os.MkdirAll(dirname, 0755)
@@ -100,9 +100,9 @@ func writeDockerRunner(buildType string) {
 	}
 }
 
-// Run implements the docker behaviour.
+// Run implements the docker subcommand.
 func Run(buildType string) {
-	writeDockerRunner(buildType)
+	writeDockerRunnerScript(buildType)
 	cwd, err := os.Getwd()
 	if err != nil {
 		log.WithError(err).Fatal("os.Getwd failed")
@@ -114,6 +114,6 @@ func Run(buildType string) {
 	command.Stderr = os.Stderr
 	err = command.Run()
 	if err != nil {
-		log.WithError(err).Fatal("cannot run build inside docker")
+		log.WithError(err).Fatal("docker run failed; please see the above logs")
 	}
 }
