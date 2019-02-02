@@ -221,6 +221,15 @@ func (cmake *CMake) SetRestrictiveCompilerFlags() {
 	cmake.WriteLine(fmt.Sprintf("MkSetCompilerFlags()"))
 }
 
+// PrepareForCompilingTargets prepares internal variables such that
+// we can compile targets with the required compiler flags.
+func (cmake *CMake) PrepareForCompilingTargets() {
+	cmake.WriteSectionComment("Prepare for compiling targets")
+	cmake.WriteLine("add_definitions(${CMAKE_REQUIRED_DEFINITIONS})")
+	cmake.WriteLine("include_directories(${CMAKE_REQUIRED_INCLUDES})")
+	cmake.WriteLine("link_libraries(${CMAKE_REQUIRED_LIBRARIES})")
+}
+
 // Close writes CMakeLists.txt in the current directory.
 func (cmake *CMake) Close() {
 	filename := "CMakeLists.txt"

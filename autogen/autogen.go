@@ -23,10 +23,7 @@ func Run(pkginfo *pkginfo.PkgInfo) {
 		handler(cmake)
 	}
 	cmake.SetRestrictiveCompilerFlags()
-	cmake.WriteSectionComment("finalize compiler")
-	cmake.WriteLine("add_definitions(${CMAKE_REQUIRED_DEFINITIONS})")
-	cmake.WriteLine("include_directories(${CMAKE_REQUIRED_INCLUDES})")
-	cmake.WriteLine("link_libraries(${CMAKE_REQUIRED_LIBRARIES})")
+	cmake.PrepareForCompilingTargets()
 	for name, sources := range pkginfo.Build.Executables {
 		cmake.WriteSectionComment(name)
 		cmake.WriteLine(fmt.Sprintf("add_executable("))
