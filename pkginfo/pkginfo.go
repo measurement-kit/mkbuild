@@ -18,7 +18,7 @@ type PkgInfo struct {
 	// Name is the name of the package
 	Name string `yaml:"name"`
 
-	// Dependencies are the module dependencies
+	// Dependencies are the package dependencies
 	Dependencies []string `yaml:"dependencies"`
 
 	// Build contains information on what we need to build

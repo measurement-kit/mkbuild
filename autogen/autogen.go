@@ -6,13 +6,12 @@ import (
 
 	"github.com/apex/log"
 	"github.com/bassosimone/mkbuild/autogen/cmake"
-	"github.com/bassosimone/mkbuild/autogen/pkginfo"
 	"github.com/bassosimone/mkbuild/autogen/rules"
+	"github.com/bassosimone/mkbuild/pkginfo"
 )
 
 // Run implements the autogen subcommand.
-func Run() {
-	pkginfo := pkginfo.Read()
+func Run(pkginfo *pkginfo.PkgInfo) {
 	cmake := cmake.Open(pkginfo.Name)
 	defer cmake.Close()
 	for _, depname := range pkginfo.Dependencies {

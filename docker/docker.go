@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	"github.com/apex/log"
+	"github.com/bassosimone/mkbuild/pkginfo"
 )
 
 // runnerTemplate is the template runner.sh run in the container.
@@ -101,7 +102,9 @@ func writeDockerRunnerScript(buildType string) {
 }
 
 // Run implements the docker subcommand.
-func Run(buildType string) {
+// TODO(bassosimone): read the specific docker container name from
+// pkginfo, so we're not bound to just a single container
+func Run(pkginfo *pkginfo.PkgInfo, buildType string) {
 	writeDockerRunnerScript(buildType)
 	cwd, err := os.Getwd()
 	if err != nil {
