@@ -44,15 +44,17 @@ func (cmake *CMake) WriteEmptyLine() {
 
 // WriteLine writes a line to the CMakeLists.txt file.
 func (cmake *CMake) WriteLine(s string) {
-	_, err := cmake.output.WriteString(cmake.indent)
-	if err != nil {
-		log.WithError(err).Fatal("cannot write indent")
+	if s != "" {
+		_, err := cmake.output.WriteString(cmake.indent)
+		if err != nil {
+			log.WithError(err).Fatal("cannot write indent")
+		}
+		_, err = cmake.output.WriteString(s)
+		if err != nil {
+			log.WithError(err).Fatal("cannot write string")
+		}
 	}
-	_, err = cmake.output.WriteString(s)
-	if err != nil {
-		log.WithError(err).Fatal("cannot write string")
-	}
-	_, err = cmake.output.WriteString("\n")
+	_, err := cmake.output.WriteString("\n")
 	if err != nil {
 		log.WithError(err).Fatal("cannot write newline")
 	}
