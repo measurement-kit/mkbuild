@@ -2,8 +2,6 @@
 package autogen
 
 import (
-	"fmt"
-
 	"github.com/apex/log"
 	"github.com/bassosimone/mkbuild/autogen/cmake"
 	"github.com/bassosimone/mkbuild/autogen/rules"
@@ -27,12 +25,6 @@ func Run(pkginfo *pkginfo.PkgInfo) {
 		cmake.AddExecutable(name, sources)
 	}
 	for name, arguments := range pkginfo.Tests {
-		cmake.WriteSectionComment("test: "+name)
-		cmake.WriteLine(fmt.Sprintf("add_test("))
-		cmake.WriteLine(fmt.Sprintf("  NAME %s COMMAND", name))
-		for _, arg := range arguments {
-			cmake.WriteLine(fmt.Sprintf("  %s", arg))
-		}
-		cmake.WriteLine(fmt.Sprintf(")"))
+		cmake.AddTest(name, arguments)
 	}
 }

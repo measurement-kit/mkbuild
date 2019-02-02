@@ -241,6 +241,17 @@ func (cmake *CMake) AddExecutable(name string, sources []string) {
 	cmake.WriteLine(fmt.Sprintf(")"))
 }
 
+// AddTest defines a test to be run
+func (cmake *CMake) AddTest(name string, arguments []string) {
+	cmake.WriteSectionComment("test: "+name)
+	cmake.WriteLine(fmt.Sprintf("add_test("))
+	cmake.WriteLine(fmt.Sprintf("  NAME %s COMMAND", name))
+	for _, arg := range arguments {
+		cmake.WriteLine(fmt.Sprintf("  %s", arg))
+	}
+	cmake.WriteLine(fmt.Sprintf(")"))
+}
+
 // Close writes CMakeLists.txt in the current directory.
 func (cmake *CMake) Close() {
 	filename := "CMakeLists.txt"
