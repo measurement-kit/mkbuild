@@ -43,7 +43,7 @@ var Rules = map[string]func(*cmake.CMake){
 				Prefix: "MK_DIST/windows/curl/"+version,
 				HeaderName: "curl/curl.h",
 				LibName: "libcurl.lib",
-				FuncName:" curl_easy_init",
+				FuncName: "curl_easy_init",
 			})
 			cmake.AddDefinition("-DCURL_STATICLIB")
 		}, func() {
