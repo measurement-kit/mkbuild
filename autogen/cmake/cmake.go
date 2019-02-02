@@ -276,6 +276,16 @@ func (cmake *CMake) AddSingleFileAsset(SHA256, URL string) {
 	cmake.Download(filename, SHA256, URL)
 }
 
+// IfWin32 allows you to generate WIN32 specific code.
+func (cmake *CMake) IfWIN32(thenFunc func(), elseFunc func()) {
+	cmake.WriteLine("if((\"${WIN32}\"))")
+	cmake.WithIndent("  ", thenFunc)
+	cmake.WriteEmptyLine()
+	cmake.WriteLine("else()")
+	cmake.WithIndent("  ", elseFunc)
+	cmake.WriteLine("endif()")
+}
+
 // Close writes CMakeLists.txt in the current directory.
 func (cmake *CMake) Close() {
 	filename := "CMakeLists.txt"

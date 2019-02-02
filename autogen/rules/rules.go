@@ -38,8 +38,7 @@ var Rules = map[string]func(*cmake.CMake){
 	},
 	"github.com/curl/curl": func(cmake *cmake.CMake) {
 		cmake.WriteSectionComment("libcurl")
-		cmake.WriteLine("if((\"${WIN32}\"))")
-		cmake.WithIndent("  ", func() {
+		cmake.IfWIN32(func() {
 			version := "7.61.1-1"
 			release := "testing"
 			baseURL := "https://github.com/measurement-kit/prebuilt/releases/download/"
@@ -68,15 +67,11 @@ var Rules = map[string]func(*cmake.CMake){
 			cmake.CheckLibraryExists(libname, "curl_easy_init", "MK_HAVE_LIBCURL", true)
 			cmake.AddLibrary(libname)
 			cmake.AddDefinition("-DCURL_STATICLIB")
-		})
-		cmake.WriteEmptyLine()
-		cmake.WriteLine("else()")
-		cmake.WithIndent(" ", func() {
+		}, func() {
 			cmake.CheckHeaderExists("curl/curl.h", "MK_HAVE_CURL_CURL_H", true)
 			cmake.CheckLibraryExists("curl", "curl_easy_init", "MK_HAVE_LIBCURL", true)
 			cmake.AddLibrary("curl")
 		})
-		cmake.WriteLine("endif()")
 	},
 	"github.com/measurement-kit/mkmock": func(cmake *cmake.CMake) {
 		cmake.AddSingleHeaderDependency(
