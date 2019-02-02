@@ -87,7 +87,9 @@ func Open(name string) *CMake {
 	cmake.writeLine("    list(APPEND CMAKE_REQUIRED_LIBRARIES -static-libgcc -static-libstdc++)")
 	cmake.writeLine("  endif()")
 	cmake.writeLine("endif()")
+	cmake.writeEmptyLine()
 	cmake.writeLine("enable_testing()")
+	cmake.writeEmptyLine()
 	cmake.if32bit(func() {
 		cmake.writeLine("SET(MK_ARCH \"x86\")")
 	}, func() {
@@ -103,7 +105,6 @@ func (cmake *CMake) download(filename, SHA256, URL string) {
 	cmake.writeLine(fmt.Sprintf("  \"%s\"", filename))
 	cmake.writeLine(fmt.Sprintf("  EXPECTED_HASH SHA256=%s", SHA256))
 	cmake.writeLine(fmt.Sprintf("  TLS_VERIFY ON)"))
-	cmake.writeEmptyLine()
 }
 
 // checkCommandError writes the code to check for errors after a
@@ -123,7 +124,6 @@ func (cmake *CMake) MkdirAll(destdirs string) {
 	))
 	cmake.writeLine(fmt.Sprintf("  RESULT_VARIABLE FAILURE)"))
 	cmake.checkCommandError()
-	cmake.writeEmptyLine()
 }
 
 // Unzip extracts |filename| in |destdir|.
@@ -136,7 +136,6 @@ func (cmake *CMake) Unzip(filename, destdir string) {
 	cmake.writeLine(fmt.Sprintf("  WORKING_DIRECTORY \"%s\"", destdir))
 	cmake.writeLine(fmt.Sprintf("  RESULT_VARIABLE FAILURE)"))
 	cmake.checkCommandError()
-	cmake.writeEmptyLine()
 }
 
 // Untar extracts |filename| in |destdir|.
@@ -153,7 +152,6 @@ func (cmake *CMake) Copy(source, dest string) {
 	))
 	cmake.writeLine(fmt.Sprintf("  RESULT_VARIABLE FAILURE)"))
 	cmake.checkCommandError()
-	cmake.writeEmptyLine()
 }
 
 // CopyDir copies source to dest.
@@ -167,7 +165,6 @@ func (cmake *CMake) CopyDir(source, dest string) {
 	))
 	cmake.writeLine(fmt.Sprintf("  RESULT_VARIABLE FAILURE)"))
 	cmake.checkCommandError()
-	cmake.writeEmptyLine()
 }
 
 // AddDefinition adds |definition| to the macro definitions
