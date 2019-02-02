@@ -71,7 +71,7 @@ if [ "$BUILD_TYPE" = "coverage" ]; then
   lcov --directory . --capture -o lcov.info
   if [ "$CODECOV_TOKEN" != "" ]; then
     curl -fsSL -o codecov.sh https://codecov.io/bash
-    bash codecov.sh -X gcov -f lcov.info
+    bash codecov.sh -X gcov -Z -f lcov.info
   fi
 fi
 `
