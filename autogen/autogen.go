@@ -17,8 +17,7 @@ func Run(pkginfo *pkginfo.PkgInfo) {
 	for _, depname := range pkginfo.Dependencies {
 		handler, ok := rules.Rules[depname]
 		if !ok {
-			log.Warnf("unknown dependency: %s", depname)
-			continue
+			log.Fatalf("unknown dependency: %s", depname)
 		}
 		handler(cmake)
 	}
