@@ -143,30 +143,6 @@ func (cmake *CMake) Untar(filename, destdir string) {
 	cmake.Unzip(filename, destdir)
 }
 
-// Copy copies source to dest.
-func (cmake *CMake) Copy(source, dest string) {
-	cmake.writeLine(fmt.Sprintf("message(STATUS \"Copy: %s %s\")", source, dest))
-	cmake.writeLine(fmt.Sprintf("execute_process(COMMAND"))
-	cmake.writeLine(fmt.Sprintf(
-		"  ${CMAKE_COMMAND} -E copy \"%s\" \"%s\"", source, dest,
-	))
-	cmake.writeLine(fmt.Sprintf("  RESULT_VARIABLE FAILURE)"))
-	cmake.checkCommandError()
-}
-
-// CopyDir copies source to dest.
-func (cmake *CMake) CopyDir(source, dest string) {
-	cmake.writeLine(fmt.Sprintf(
-		"message(STATUS \"CopyDir: %s %s\")", source, dest,
-	))
-	cmake.writeLine(fmt.Sprintf("execute_process(COMMAND"))
-	cmake.writeLine(fmt.Sprintf(
-		"  ${CMAKE_COMMAND} -E copy_directory \"%s\" \"%s\"", source, dest,
-	))
-	cmake.writeLine(fmt.Sprintf("  RESULT_VARIABLE FAILURE)"))
-	cmake.checkCommandError()
-}
-
 // AddDefinition adds |definition| to the macro definitions
 func (cmake *CMake) AddDefinition(definition string) {
 	cmake.writeLine(fmt.Sprintf(
