@@ -1,4 +1,4 @@
-// Package docker implements the docker behaviour
+// Package docker implements the docker subcommand
 package docker
 
 import (
