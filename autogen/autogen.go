@@ -10,7 +10,7 @@ import (
 	"github.com/bassosimone/mkbuild/autogen/rules"
 )
 
-// Run implements the autogen behaviour.
+// Run implements the autogen subcommand.
 func Run() {
 	pkginfo := pkginfo.Read()
 	cmake := cmake.Open(pkginfo.Name)
