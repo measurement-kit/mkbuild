@@ -9,6 +9,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/bassosimone/mkbuild/autogen/cmake/restrictiveflags"
+	"github.com/bassosimone/mkbuild/autogen/prebuilt"
 )
 
 // CMake is the CMake driver
@@ -87,6 +88,11 @@ func Open(name string) *CMake {
 	cmake.WriteLine("  endif()")
 	cmake.WriteLine("endif()")
 	cmake.WriteLine("enable_testing()")
+	cmake.If32bit(func() {
+		cmake.WriteLine("SET(MK_ARCH \"x86\")")
+	}, func() {
+		cmake.WriteLine("SET(MK_ARCH \"x64\")")
+	})
 	return cmake
 }
 
@@ -270,7 +276,7 @@ func (cmake *CMake) BuildLibrary(name string, sources []string, libs []string) {
 
 // RunTest defines a test to be run
 func (cmake *CMake) RunTest(name, command string) {
-	cmake.WriteSectionComment("test: "+name)
+	cmake.WriteSectionComment("test: " + name)
 	cmake.WriteLine(fmt.Sprintf("add_test("))
 	cmake.WriteLine(fmt.Sprintf("  NAME %s COMMAND %s", name, command))
 	cmake.WriteLine(fmt.Sprintf(")"))
@@ -323,11 +329,23 @@ func (cmake *CMake) If32bit(func32 func(), func64 func()) {
 	cmake.WriteLine("endif()")
 }
 
+// Win32InstallPrebuilt installs a prebuilt Windows package.
+func (cmake *CMake) Win32InstallPrebuilt(info *prebuilt.Info) {
+	cmake.DownloadAndExtractArchive(info.SHA256, info.URL)
+	basedir := "${CMAKE_BINARY_DIR}/.mkbuild/download/" + info.Prefix + "/${MK_ARCH}"
+	includedirname := basedir + "/include"
+	libnameFull := basedir + "/lib/" + info.LibName
+	cmake.AddIncludeDir(includedirname)
+	cmake.CheckHeaderExists(info.HeaderName, "MK_WIN32_HAVE_HEADER", true)
+	cmake.CheckLibraryExists(libnameFull, info.FuncName, "MK_WIN32_HAVE_LIBRARY", true)
+	cmake.AddLibrary(libnameFull)
+}
+
 // DownloadAndExtractArchive downloads and extracts and archive
 func (cmake *CMake) DownloadAndExtractArchive(SHA256, URL string) {
 	archiveName := filepath.Base(URL)
 	cmake.WriteSectionComment(archiveName)
-	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/archive"
+	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/download"
 	filename := dirname + "/" + archiveName
 	cmake.MkdirAll(dirname)
 	cmake.Download(filename, SHA256, URL)

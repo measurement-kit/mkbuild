@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bassosimone/mkbuild/autogen/cmake"
+	"github.com/bassosimone/mkbuild/autogen/prebuilt"
 )
 
 // Rules contains all the build rules that we know of.
@@ -31,27 +32,19 @@ var Rules = map[string]func(*cmake.CMake){
 		cmake.WriteSectionComment("libcurl")
 		cmake.IfWIN32(func() {
 			version := "7.61.1-1"
-			release := "testing"
-			baseURL := "https://github.com/measurement-kit/prebuilt/releases/download/"
-			URL := fmt.Sprintf("%s/%s/windows-curl-%s.tar.gz", baseURL, release, version)
-			cmake.DownloadAndExtractArchive(
-				"424d2f18f0f74dd6a0128f0f4e59860b7d2f00c80bbf24b2702e9cac661357cf",
-				URL,
-			)
-			cmake.If32bit(func() {
-				cmake.WriteLine("SET(MK_CURL_ARCH \"x86\")")
-			}, func() {
-				cmake.WriteLine("SET(MK_CURL_ARCH \"x64\")")
+			cmake.Win32InstallPrebuilt(&prebuilt.Info{
+				SHA256: "424d2f18f0f74dd6a0128f0f4e59860b7d2f00c80bbf24b2702e9cac661357cf",
+				URL: fmt.Sprintf(
+					"%s/%s/windows-curl-%s.tar.gz",
+					"https://github.com/measurement-kit/prebuilt/releases/download/",
+					"testing",
+					version,
+				),
+				Prefix: "MK_DIST/windows/curl/"+version,
+				HeaderName: "curl/curl.h",
+				LibName: "libcurl.lib",
+				FuncName:" curl_easy_init",
 			})
-			cmake.WriteEmptyLine()
-			curldir := "${CMAKE_BINARY_DIR}/.mkbuild/download/MK_DIST/windows/curl/" + version + "/${MK_CURL_ARCH}"
-			includedirname := curldir + "/include"
-			libname := curldir + "/lib/libcurl.lib"
-			cmake.AddIncludeDir(includedirname)
-			cmake.CheckHeaderExists("curl/curl.h", "MK_HAVE_CURL_CURL_H", true)
-			cmake.WriteEmptyLine()
-			cmake.CheckLibraryExists(libname, "curl_easy_init", "MK_HAVE_LIBCURL", true)
-			cmake.AddLibrary(libname)
 			cmake.AddDefinition("-DCURL_STATICLIB")
 		}, func() {
 			cmake.CheckHeaderExists("curl/curl.h", "MK_HAVE_CURL_CURL_H", true)
