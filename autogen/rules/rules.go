@@ -11,7 +11,7 @@ import (
 var Rules = map[string]func(*cmake.CMake){
 	"curl.haxx.se/ca": func(cmake *cmake.CMake) {
 		cmake.AddSingleFileAsset(
-			"4d89992b90f3e177ab1d895c00e8cded6c9009bec9d56981ff4f0a59e9cc56d6",
+			"c1fd9b235896b1094ee97bfb7e042f93530b5e300781f59b45edf84ee8c75000",
 			"https://curl.haxx.se/ca/cacert.pem",
 		)
 	},
