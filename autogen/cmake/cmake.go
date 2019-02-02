@@ -27,6 +27,15 @@ func (cmake *CMake) WithIndent(indent string, fn func()) {
 	cmake.indent = oldIndent
 }
 
+// WriteSectionComment writes a comment for |name| in |cmake|.
+func (cmake *CMake) WriteSectionComment(name string) {
+	cmake.WriteLine("")
+	cmake.WriteLine(fmt.Sprintf("#"))
+	cmake.WriteLine(fmt.Sprintf("# %s", name))
+	cmake.WriteLine(fmt.Sprintf("#"))
+	cmake.WriteLine("")
+}
+
 // WriteLine writes a line to the CMakeLists.txt file.
 func (cmake *CMake) WriteLine(s string) {
 	_, err := cmake.output.WriteString(cmake.indent)

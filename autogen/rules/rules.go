@@ -7,18 +7,9 @@ import (
 	"github.com/bassosimone/mkbuild/autogen/cmake"
 )
 
-// WriteSectionComment writes a comment for |name| in |cmake|.
-func WriteSectionComment(cmake *cmake.CMake, name string) {
-	cmake.WriteLine("")
-	cmake.WriteLine(fmt.Sprintf("#"))
-	cmake.WriteLine(fmt.Sprintf("# %s", name))
-	cmake.WriteLine(fmt.Sprintf("#"))
-	cmake.WriteLine("")
-}
-
 // downloadSingleHeader downloads a library consisting of a single header.
 func downloadSingleHeader(cmake *cmake.CMake, headerName, guardVariable, SHA256, URL string) {
-	WriteSectionComment(cmake, headerName)
+	cmake.WriteSectionComment(headerName)
 	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/include"
 	filename := dirname + "/" + headerName
 	cmake.MkdirAll(dirname)
@@ -40,7 +31,7 @@ func downloadWinCurl(cmake *cmake.CMake, filename, SHA256, URL string) {
 // Rules contains all the build rules that we know of.
 var Rules = map[string]func(*cmake.CMake){
 	"curl.haxx.se/ca": func(cmake *cmake.CMake) {
-		WriteSectionComment(cmake, "ca-bundle.pem")
+		cmake.WriteSectionComment("ca-bundle.pem")
 		dirname := "${CMAKE_BINARY_DIR}/.mkbuild/etc"
 		filename := dirname + "/ca-bundle.pem"
 		cmake.MkdirAll(dirname)
@@ -62,7 +53,7 @@ var Rules = map[string]func(*cmake.CMake){
 		)
 	},
 	"github.com/curl/curl": func(cmake *cmake.CMake) {
-		WriteSectionComment(cmake, "libcurl")
+		cmake.WriteSectionComment("libcurl")
 		cmake.WriteLine("if((\"${WIN32}\"))")
 		cmake.WithIndent("  ", func() {
 			version := "7.61.1-1"

@@ -22,15 +22,15 @@ func Run(pkginfo *pkginfo.PkgInfo) {
 		}
 		handler(cmake)
 	}
-	rules.WriteSectionComment(cmake, "set restrictive compiler flags")
+	cmake.WriteSectionComment("set restrictive compiler flags")
 	cmake.SetRestrictiveCompilerFlags()
-	rules.WriteSectionComment(cmake, "finalize compiler")
+	cmake.WriteSectionComment("finalize compiler")
 	cmake.WriteLine("add_definitions(${CMAKE_REQUIRED_DEFINITIONS})")
 	cmake.WriteLine("include_directories(${CMAKE_REQUIRED_INCLUDES})")
 	cmake.WriteLine("link_libraries(${CMAKE_REQUIRED_LIBRARIES})")
 	cmake.WriteLine("enable_testing()")
 	for name, sources := range pkginfo.Build.Executables {
-		rules.WriteSectionComment(cmake, name)
+		cmake.WriteSectionComment(name)
 		cmake.WriteLine(fmt.Sprintf("add_executable("))
 		cmake.WriteLine(fmt.Sprintf("  %s", name))
 		for _, source := range sources {
@@ -39,7 +39,7 @@ func Run(pkginfo *pkginfo.PkgInfo) {
 		cmake.WriteLine(fmt.Sprintf(")"))
 	}
 	for name, arguments := range pkginfo.Tests {
-		rules.WriteSectionComment(cmake, "test: "+name)
+		cmake.WriteSectionComment("test: "+name)
 		cmake.WriteLine(fmt.Sprintf("add_test("))
 		cmake.WriteLine(fmt.Sprintf("  NAME %s COMMAND", name))
 		for _, arg := range arguments {
