@@ -7,18 +7,6 @@ import (
 	"github.com/bassosimone/mkbuild/autogen/cmake"
 )
 
-// downloadSingleHeader downloads a library consisting of a single header.
-func downloadSingleHeader(cmake *cmake.CMake, headerName, guardVariable, SHA256, URL string) {
-	cmake.WriteSectionComment(headerName)
-	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/include"
-	filename := dirname + "/" + headerName
-	cmake.MkdirAll(dirname)
-	cmake.Download(filename, SHA256, URL)
-	cmake.AddIncludeDir(dirname)
-	cmake.CheckHeaderExists(headerName, guardVariable, true)
-	cmake.WriteEmptyLine()
-}
-
 // downloadWinCurl downloads curl for Windows
 func downloadWinCurl(cmake *cmake.CMake, filename, SHA256, URL string) {
 	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/download"
@@ -41,13 +29,13 @@ var Rules = map[string]func(*cmake.CMake){
 		)
 	},
 	"github.com/adishavit/argh": func(cmake *cmake.CMake) {
-		downloadSingleHeader(cmake, "argh.h", "MK_HAVE_ARGH_H",
+		cmake.AddSingleHeaderDependency(
 			"ddb7dfc18dcf90149735b76fb2cff101067453a1df1943a6911233cb7085980c",
 			"https://raw.githubusercontent.com/adishavit/argh/v1.3.0/argh.h",
 		)
 	},
 	"github.com/catchorg/catch2": func(cmake *cmake.CMake) {
-		downloadSingleHeader(cmake, "catch.hpp", "MK_HAVE_CATCH_HPP",
+		cmake.AddSingleHeaderDependency(
 			"5eb8532fd5ec0d28433eba8a749102fd1f98078c5ebf35ad607fb2455a000004",
 			"https://github.com/catchorg/Catch2/releases/download/v2.3.0/catch.hpp",
 		)
@@ -95,7 +83,7 @@ var Rules = map[string]func(*cmake.CMake){
 		cmake.WriteLine("endif()")
 	},
 	"github.com/measurement-kit/mkmock": func(cmake *cmake.CMake) {
-		downloadSingleHeader(cmake, "mkmock.hpp", "MK_HAVE_MKMOCK_HPP",
+		cmake.AddSingleHeaderDependency(
 			"f07bc063a2e64484482f986501003e45ead653ea3f53fadbdb45c17a51d916d2",
 			"https://raw.githubusercontent.com/measurement-kit/mkmock/v0.2.0/mkmock.hpp",
 		)

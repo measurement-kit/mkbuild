@@ -4,6 +4,7 @@ package cmake
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/apex/log"
@@ -250,6 +251,18 @@ func (cmake *CMake) AddTest(name string, arguments []string) {
 		cmake.WriteLine(fmt.Sprintf("  %s", arg))
 	}
 	cmake.WriteLine(fmt.Sprintf(")"))
+}
+
+func (cmake *CMake) AddSingleHeaderDependency(SHA256, URL string) {
+	headerName := filepath.Base(URL)
+	cmake.WriteSectionComment(headerName)
+	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/include"
+	filename := dirname + "/" + headerName
+	cmake.MkdirAll(dirname)
+	cmake.Download(filename, SHA256, URL)
+	cmake.AddIncludeDir(dirname)
+	guardVariable := "MK_HAVE_" + strings.ToUpper(strings.Replace(headerName, ".", "_", -1))
+	cmake.CheckHeaderExists(headerName, guardVariable, true)
 }
 
 // Close writes CMakeLists.txt in the current directory.
