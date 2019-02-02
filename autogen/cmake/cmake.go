@@ -230,6 +230,17 @@ func (cmake *CMake) PrepareForCompilingTargets() {
 	cmake.WriteLine("link_libraries(${CMAKE_REQUIRED_LIBRARIES})")
 }
 
+// AddExecutable defines an executable to be compiled.
+func (cmake *CMake) AddExecutable(name string, sources []string) {
+	cmake.WriteSectionComment(name)
+	cmake.WriteLine(fmt.Sprintf("add_executable("))
+	cmake.WriteLine(fmt.Sprintf("  %s", name))
+	for _, source := range sources {
+		cmake.WriteLine(fmt.Sprintf("  %s", source))
+	}
+	cmake.WriteLine(fmt.Sprintf(")"))
+}
+
 // Close writes CMakeLists.txt in the current directory.
 func (cmake *CMake) Close() {
 	filename := "CMakeLists.txt"

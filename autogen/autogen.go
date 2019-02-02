@@ -24,13 +24,7 @@ func Run(pkginfo *pkginfo.PkgInfo) {
 	cmake.SetRestrictiveCompilerFlags()
 	cmake.PrepareForCompilingTargets()
 	for name, sources := range pkginfo.Build.Executables {
-		cmake.WriteSectionComment(name)
-		cmake.WriteLine(fmt.Sprintf("add_executable("))
-		cmake.WriteLine(fmt.Sprintf("  %s", name))
-		for _, source := range sources {
-			cmake.WriteLine(fmt.Sprintf("  %s", source))
-		}
-		cmake.WriteLine(fmt.Sprintf(")"))
+		cmake.AddExecutable(name, sources)
 	}
 	for name, arguments := range pkginfo.Tests {
 		cmake.WriteSectionComment("test: "+name)
