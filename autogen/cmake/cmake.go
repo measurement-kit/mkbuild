@@ -83,6 +83,7 @@ func Open(name string) *CMake {
 	cmake.WriteLine("    list(APPEND CMAKE_REQUIRED_LIBRARIES -static-libgcc -static-libstdc++)")
 	cmake.WriteLine("  endif()")
 	cmake.WriteLine("endif()")
+	cmake.WriteLine("enable_testing()")
 	return cmake
 }
 
