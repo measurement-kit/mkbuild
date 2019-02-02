@@ -16,7 +16,7 @@ func downloadSingleHeader(cmake *cmake.CMake, headerName, guardVariable, SHA256,
 	cmake.Download(filename, SHA256, URL)
 	cmake.AddIncludeDir(dirname)
 	cmake.CheckHeaderExists(headerName, guardVariable, true)
-	cmake.WriteLine("")
+	cmake.WriteEmptyLine()
 }
 
 // downloadWinCurl downloads curl for Windows
@@ -74,18 +74,18 @@ var Rules = map[string]func(*cmake.CMake){
 				cmake.WriteLine("SET(MK_CURL_ARCH \"x64\")")
 			})
 			cmake.WriteLine("endif()")
-			cmake.WriteLine("")
+			cmake.WriteEmptyLine()
 			curldir := "${CMAKE_BINARY_DIR}/.mkbuild/download/MK_DIST/windows/curl/" + version + "/${MK_CURL_ARCH}"
 			includedirname := curldir + "/include"
 			libname := curldir + "/lib/libcurl.lib"
 			cmake.AddIncludeDir(includedirname)
 			cmake.CheckHeaderExists("curl/curl.h", "MK_HAVE_CURL_CURL_H", true)
-			cmake.WriteLine("")
+			cmake.WriteEmptyLine()
 			cmake.CheckLibraryExists(libname, "curl_easy_init", "MK_HAVE_LIBCURL", true)
 			cmake.AddLibrary(libname)
 			cmake.AddDefinition("-DCURL_STATICLIB")
 		})
-		cmake.WriteLine("")
+		cmake.WriteEmptyLine()
 		cmake.WriteLine("else()")
 		cmake.WithIndent(" ", func() {
 			cmake.CheckHeaderExists("curl/curl.h", "MK_HAVE_CURL_CURL_H", true)
