@@ -22,7 +22,6 @@ func Run(pkginfo *pkginfo.PkgInfo) {
 		}
 		handler(cmake)
 	}
-	cmake.WriteSectionComment("set restrictive compiler flags")
 	cmake.SetRestrictiveCompilerFlags()
 	cmake.WriteSectionComment("finalize compiler")
 	cmake.WriteLine("add_definitions(${CMAKE_REQUIRED_DEFINITIONS})")

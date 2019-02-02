@@ -214,6 +214,7 @@ func (cmake *CMake) CheckLibraryExists(library, function, variable string, manda
 
 // SetRestrictiveCompilerFlags sets restrictive compiler flags.
 func (cmake *CMake) SetRestrictiveCompilerFlags() {
+	cmake.WriteSectionComment("Set restrictive compiler flags")
 	cmake.output.WriteString(restrictiveflags.S)
 	cmake.WriteEmptyLine()
 	cmake.WriteLine(fmt.Sprintf("MkSetCompilerFlags()"))
