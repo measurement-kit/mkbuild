@@ -48,15 +48,11 @@ var Rules = map[string]func(*cmake.CMake){
 				"424d2f18f0f74dd6a0128f0f4e59860b7d2f00c80bbf24b2702e9cac661357cf",
 				URL,
 			)
-			cmake.WriteLine("if((\"${CMAKE_SIZEOF_VOID_P}\" EQUAL 4))")
-			cmake.WithIndent("  ", func() {
+			cmake.If32bit(func() {
 				cmake.WriteLine("SET(MK_CURL_ARCH \"x86\")")
-			})
-			cmake.WriteLine("else()")
-			cmake.WithIndent("  ", func() {
+			}, func() {
 				cmake.WriteLine("SET(MK_CURL_ARCH \"x64\")")
 			})
-			cmake.WriteLine("endif()")
 			cmake.WriteEmptyLine()
 			curldir := "${CMAKE_BINARY_DIR}/.mkbuild/download/MK_DIST/windows/curl/" + version + "/${MK_CURL_ARCH}"
 			includedirname := curldir + "/include"

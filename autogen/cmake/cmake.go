@@ -276,13 +276,27 @@ func (cmake *CMake) AddSingleFileAsset(SHA256, URL string) {
 	cmake.Download(filename, SHA256, URL)
 }
 
-// IfWin32 allows you to generate WIN32 specific code.
+// IfWin32 allows you to generate WIN32 / !WIN32 specific code.
 func (cmake *CMake) IfWIN32(thenFunc func(), elseFunc func()) {
 	cmake.WriteLine("if((\"${WIN32}\"))")
 	cmake.WithIndent("  ", thenFunc)
-	cmake.WriteEmptyLine()
 	cmake.WriteLine("else()")
 	cmake.WithIndent("  ", elseFunc)
+	cmake.WriteLine("endif()")
+}
+
+// If32bit allows you to generate 32 bit / 64 bit specific code. This
+// function will configure cmake to fail if the bitsize is neither
+// 32 not 64. That would be a very weird configuraton.
+func (cmake *CMake) If32bit(func32 func(), func64 func()) {
+	cmake.WriteLine("if((\"${CMAKE_SIZEOF_VOID_P}\" EQUAL 4))")
+	cmake.WithIndent("  ", func32)
+	cmake.WriteLine("elseif((\"${CMAKE_SIZEOF_VOID_P}\" EQUAL 8))")
+	cmake.WithIndent("  ", func64)
+	cmake.WriteLine("else()")
+	cmake.WithIndent("  ", func() {
+		cmake.WriteLine("message(FATAL_ERROR \"Neither 32 not 64 bit\")")
+	})
 	cmake.WriteLine("endif()")
 }
 
