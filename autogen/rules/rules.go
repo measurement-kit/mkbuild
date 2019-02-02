@@ -7,15 +7,6 @@ import (
 	"github.com/bassosimone/mkbuild/autogen/cmake"
 )
 
-// downloadWinCurl downloads curl for Windows
-func downloadWinCurl(cmake *cmake.CMake, filename, SHA256, URL string) {
-	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/download"
-	filepathname := dirname + "/" + filename
-	cmake.MkdirAll(dirname)
-	cmake.Download(filepathname, SHA256, URL)
-	cmake.Untar(filepathname, dirname)
-}
-
 // Rules contains all the build rules that we know of.
 var Rules = map[string]func(*cmake.CMake){
 	"curl.haxx.se/ca": func(cmake *cmake.CMake) {
@@ -43,8 +34,7 @@ var Rules = map[string]func(*cmake.CMake){
 			release := "testing"
 			baseURL := "https://github.com/measurement-kit/prebuilt/releases/download/"
 			URL := fmt.Sprintf("%s/%s/windows-curl-%s.tar.gz", baseURL, release, version)
-			downloadWinCurl(
-				cmake, "windows-curl.tar.gz",
+			cmake.DownloadAndExtractArchive(
 				"424d2f18f0f74dd6a0128f0f4e59860b7d2f00c80bbf24b2702e9cac661357cf",
 				URL,
 			)

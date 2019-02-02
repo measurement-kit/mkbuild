@@ -302,6 +302,18 @@ func (cmake *CMake) If32bit(func32 func(), func64 func()) {
 	cmake.WriteLine("endif()")
 }
 
+// DownloadAndExtractArchive downloads and extracts and archive
+func (cmake *CMake) DownloadAndExtractArchive(SHA256, URL string) {
+	archiveName := filepath.Base(URL)
+	cmake.WriteSectionComment(archiveName)
+	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/archive"
+	filename := dirname + "/" + archiveName
+	cmake.MkdirAll(dirname)
+	cmake.Download(filename, SHA256, URL)
+	filepathname := dirname + "/" + archiveName
+	cmake.Untar(filepathname, dirname)
+}
+
 // Close writes CMakeLists.txt in the current directory.
 func (cmake *CMake) Close() {
 	filename := "CMakeLists.txt"
