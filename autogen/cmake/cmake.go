@@ -212,6 +212,17 @@ func (cmake *CMake) prepareForCompilingTargets() {
 	cmake.writeLine("include_directories(${CMAKE_REQUIRED_INCLUDES})")
 }
 
+// targetLinkLibraries will write the required libraries for target.
+func (cmake *CMake) targetLinkLibraries(name string, libs []string) {
+	cmake.writeLine(fmt.Sprintf("target_link_libraries("))
+	cmake.writeLine(fmt.Sprintf("  %s", name))
+	for _, lib := range libs {
+		cmake.writeLine(fmt.Sprintf("  %s", lib))
+	}
+	cmake.writeLine(fmt.Sprintf("  ${CMAKE_REQUIRED_LIBRARIES}"))
+	cmake.writeLine(fmt.Sprintf(")"))
+}
+
 // BuildExecutable defines an executable to be compiled.
 func (cmake *CMake) BuildExecutable(name string, sources []string, libs []string) {
 	cmake.writeSectionComment(name)
@@ -221,13 +232,7 @@ func (cmake *CMake) BuildExecutable(name string, sources []string, libs []string
 		cmake.writeLine(fmt.Sprintf("  %s", source))
 	}
 	cmake.writeLine(fmt.Sprintf(")"))
-	cmake.writeLine(fmt.Sprintf("target_link_libraries("))
-	cmake.writeLine(fmt.Sprintf("  %s", name))
-	for _, lib := range libs {
-		cmake.writeLine(fmt.Sprintf("  %s", lib))
-	}
-	cmake.writeLine(fmt.Sprintf("  ${CMAKE_REQUIRED_LIBRARIES}"))
-	cmake.writeLine(fmt.Sprintf(")"))
+	cmake.targetLinkLibraries(name, libs)
 }
 
 // BuildLibrary defines a static library to be compiled.
@@ -239,13 +244,7 @@ func (cmake *CMake) BuildLibrary(name string, sources []string, libs []string) {
 		cmake.writeLine(fmt.Sprintf("  %s", source))
 	}
 	cmake.writeLine(fmt.Sprintf(")"))
-	cmake.writeLine(fmt.Sprintf("target_link_libraries("))
-	cmake.writeLine(fmt.Sprintf("  %s", name))
-	for _, lib := range libs {
-		cmake.writeLine(fmt.Sprintf("  %s", lib))
-	}
-	cmake.writeLine(fmt.Sprintf("  ${CMAKE_REQUIRED_LIBRARIES}"))
-	cmake.writeLine(fmt.Sprintf(")"))
+	cmake.targetLinkLibraries(name, libs)
 }
 
 // RunTest defines a test to be run
