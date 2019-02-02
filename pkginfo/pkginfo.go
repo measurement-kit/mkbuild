@@ -24,6 +24,11 @@ type targetInfo struct {
 	Executables map[string]buildInfo
 }
 
+type testInfo struct {
+	// Command is the command to execute
+	Command string
+}
+
 // PkgInfo contains information on a package
 type PkgInfo struct {
 	// Name is the name of the package
@@ -36,7 +41,7 @@ type PkgInfo struct {
 	Targets targetInfo
 
 	// Tests contains information on the tests to run
-	Tests map[string][]string
+	Tests map[string]testInfo
 }
 
 // Read reads package info from "MKBuild.yaml"

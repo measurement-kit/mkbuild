@@ -27,7 +27,7 @@ func Run(pkginfo *pkginfo.PkgInfo) {
 	for name, buildinfo := range pkginfo.Targets.Executables {
 		cmake.BuildExecutable(name, buildinfo.Compile, buildinfo.Link)
 	}
-	for name, arguments := range pkginfo.Tests {
-		cmake.AddTest(name, arguments)
+	for name, testInfo := range pkginfo.Tests {
+		cmake.RunTest(name, testInfo.Command)
 	}
 }

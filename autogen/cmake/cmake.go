@@ -268,14 +268,11 @@ func (cmake *CMake) BuildLibrary(name string, sources []string, libs []string) {
 	cmake.WriteLine(fmt.Sprintf(")"))
 }
 
-// AddTest defines a test to be run
-func (cmake *CMake) AddTest(name string, arguments []string) {
+// RunTest defines a test to be run
+func (cmake *CMake) RunTest(name, command string) {
 	cmake.WriteSectionComment("test: "+name)
 	cmake.WriteLine(fmt.Sprintf("add_test("))
-	cmake.WriteLine(fmt.Sprintf("  NAME %s COMMAND", name))
-	for _, arg := range arguments {
-		cmake.WriteLine(fmt.Sprintf("  %s", arg))
-	}
+	cmake.WriteLine(fmt.Sprintf("  NAME %s COMMAND %s", name, command))
 	cmake.WriteLine(fmt.Sprintf(")"))
 }
 

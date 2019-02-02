@@ -41,24 +41,27 @@ targets:
 
 tests:
   mocked_tests:
-  - tests
+    command: tests
   integration_tests:
-  - integration-tests
+    command: integration-tests
   external_ca:
-  - mkcurl-client --ca-bundle-path ./.mkbuild/etc/ca-bundle.pem
-    https://www.kernel.org
+    command: mkcurl-client --ca-bundle-path ./.mkbuild/data/cacert.pem
+      https://www.kernel.org
   http11_test:
-  - mkcurl-client https://ooni.torproject.org
+    command: mkcurl-client https://ooni.torproject.org
   using_timeout:
-  - mkcurl-client --timeout 10 --follow-redirect https://www.facebook.com
+    command: mkcurl-client --timeout 10 --follow-redirect
+      https://www.facebook.com
   redirect_test:
-  - mkcurl-client --follow-redirect http://google.com
+    command: mkcurl-client --follow-redirect http://google.com
   post:
-  - mkcurl-client --post --data "{\"net-tests\":[]}" https://httpbin.org/post
+    command: mkcurl-client --post --data "{\"net-tests\":[]}"
+      https://httpbin.org/post
   put:
-  - mkcurl-client --put --data "{\"net-tests\":[]}" https://httpbin.org/put
+    command: mkcurl-client --put --data "{\"net-tests\":[]}"
+      https://httpbin.org/put
   connect_to:
-  - mkcurl-client --connect-to www.google.com https://www.youtube.com
+    command: mkcurl-client --connect-to www.google.com https://www.youtube.com
 ```
 
 Where `name` is the name of the project, `dependencies` is a list containing
@@ -81,10 +84,7 @@ above example, a library named `foo`, you can refer to it later in the
 `link` section of another target simply as `foo`.
 
 The `tests` indicates what test to run. Each key inside `tests` is the name
-of a test. Each key maps to a list of arguments to be passed to a test. It's
-up to you whether to put each argument as a separate list item, or to put
-all the arguments as part of the same list entry, like in figure. We do allow
-for both styles, as the latter may be convenient with very long cmdlines.
+of a test. The `command` key indicates what command to execute.
 
 One you've written you `MKBuild.yaml`, run
 
