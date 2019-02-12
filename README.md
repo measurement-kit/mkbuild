@@ -18,6 +18,8 @@ project and write inside it something similar to:
 ```YAML
 name: mkcurl
 
+docker: bassosimone/mk-debian
+
 dependencies:
 - curl.haxx.se/ca
 - github.com/adishavit/argh

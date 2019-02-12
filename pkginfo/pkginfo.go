@@ -37,6 +37,9 @@ type PkgInfo struct {
 	// Name is the name of the package
 	Name string
 
+	// Docker is the docker container to use for running tests
+	Docker string
+
 	// Dependencies are the package dependencies
 	Dependencies []string
 

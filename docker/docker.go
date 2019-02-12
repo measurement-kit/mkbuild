@@ -2,29 +2,34 @@
 package docker
 
 import (
-	"fmt"
 	"os"
-	"os/exec"
 	"text/template"
 
 	"github.com/apex/log"
 	"github.com/bassosimone/mkbuild/pkginfo"
 )
 
-// runnerTemplate is the template runner.sh run in the container.
-var runnerTemplate = `#!/bin/sh -e
-BUILD_TYPE="{{.BUILD_TYPE}}"
-export CODECOV_TOKEN="{{.CODECOV_TOKEN}}"
-export TRAVIS_BRANCH="{{.TRAVIS_BRANCH}}"
+// runSh is the script that will run the test.
+var runSh = `#!/bin/sh -e
+USAGE="Usage: $0 asan|clang|coverage|tsan|ubsan|vanilla"
+
+if [ $# -ne 1 ]; then
+  echo "$USAGE" 1>&2
+  exit 1
+fi
+BUILD_TYPE="$1"
+shift
+
+if [ "$CODECOV_TOKEN" = "" ]; then
+  echo "WARNING: CODECOV_TOKEN is not set" 1>&2
+fi
+if [ "$TRAVIS_BRANCH" = "" ]; then
+  echo "WARNING: TRAVIS_BRANCH is not set" 1>&2
+fi
 set -x
 
-# Build the latest mkbuild for the docker container
-export GOPATH=/go
-install -d $GOPATH
-go get -v github.com/bassosimone/mkbuild
 cd /mk
 env | grep -v TOKEN | sort
-$GOPATH/bin/mkbuild autogen
 
 # Make sure we don't consume too much resources by bumping latency
 tc qdisc add dev eth0 root netem delay 200ms 10ms
@@ -77,46 +82,57 @@ if [ "$BUILD_TYPE" = "coverage" ]; then
 fi
 `
 
-// writeDockerRunnerScript writes the docker runner script.
-func writeDockerRunnerScript(buildType string) {
-	tmpl := template.Must(template.New("runner.sh").Parse(runnerTemplate))
-	dirname := ".mkbuild/script"
+// trampolineSh is the script that will run docker
+var trampolineSh = `#!/bin/sh -e
+docker run --cap-add=NET_ADMIN \
+          -e CODECOV_TOKEN=$CODECOV_TOKEN \
+          -e TRAVIS_BRANCH=$TRAVIS_BRANCH \
+          -v "$(pwd):/mk" \
+          -t {{.CONTAINER_NAME}} \
+          /mk/.ci/docker/run.sh
+`
+
+// writeDockerScripts writes the docker scripts.
+func writeDockerScripts(pkginfo *pkginfo.PkgInfo) {
+	dirname := ".ci/docker"
 	err := os.MkdirAll(dirname, 0755)
 	if err != nil {
 		log.WithError(err).Fatalf("cannot create dir: %s", dirname)
 	}
-	filename := dirname + "/runner.sh"
-	filep, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
-	if err != nil {
-		log.WithError(err).Fatalf("cannot open file: %s", filename)
+	{
+		tmpl := template.Must(template.New("run.sh").Parse(runSh))
+		filename := dirname + "/run.sh"
+		filep, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
+		if err != nil {
+			log.WithError(err).Fatalf("cannot open file: %s", filename)
+		}
+		defer filep.Close()
+		err = tmpl.Execute(filep, map[string]string{})
+		if err != nil {
+			log.WithError(err).Fatalf("cannot write file: %s", filename)
+		}
 	}
-	defer filep.Close()
-	err = tmpl.Execute(filep, map[string]string{
-		"BUILD_TYPE":    buildType,
-		"CODECOV_TOKEN": os.Getenv("CODECOV_TOKEN"),
-		"TRAVIS_BRANCH": os.Getenv("TRAVIS_BRANCH"),
-	})
-	if err != nil {
-		log.WithError(err).Fatalf("cannot write file: %s", filename)
+	{
+		tmpl := template.Must(template.New("trampoline.sh").Parse(trampolineSh))
+		filename := dirname + "/trampoline.sh"
+		filep, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
+		if err != nil {
+			log.WithError(err).Fatalf("cannot open file: %s", filename)
+		}
+		defer filep.Close()
+		err = tmpl.Execute(filep, map[string]string{
+			"CONTAINER_NAME": pkginfo.Docker,
+		})
+		if err != nil {
+			log.WithError(err).Fatalf("cannot write file: %s", filename)
+		}
 	}
 }
 
 // Run implements the docker subcommand.
-// TODO(bassosimone): read the specific docker container name from
-// pkginfo, so we're not bound to just a single container
 func Run(pkginfo *pkginfo.PkgInfo, buildType string) {
-	writeDockerRunnerScript(buildType)
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.WithError(err).Fatal("os.Getwd failed")
+	if pkginfo.Docker == "" {
+		log.Fatal("no docker container specified")
 	}
-	command := exec.Command("docker", "run", "--cap-add=NET_ADMIN", "-v",
-		fmt.Sprintf("%s:/mk", cwd), "-t", "bassosimone/mk-debian",
-		"/mk/.mkbuild/script/runner.sh")
-	command.Stdout = os.Stdout
-	command.Stderr = os.Stderr
-	err = command.Run()
-	if err != nil {
-		log.WithError(err).Fatal("docker run failed; please see the above logs")
-	}
+	writeDockerScripts(pkginfo)
 }
