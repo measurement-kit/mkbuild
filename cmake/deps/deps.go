@@ -63,4 +63,10 @@ var All = map[string]func(*cmakefile.CMakeFile){
 			"https://raw.githubusercontent.com/measurement-kit/mkmock/v0.2.0/mkmock.hpp",
 		)
 	},
+	"github.com/nlohmann/json": func(cmake *cmakefile.CMakeFile) {
+		cmake.AddSingleHeaderDependency(
+			"8a6dbf3bf01156f438d0ca7e78c2971bca50eec4ca6f0cf59adf3464c43bb9d5",
+			"https://raw.githubusercontent.com/nlohmann/json/v3.5.0/single_include/nlohmann/json.hpp",
+		)
+	},
 }
