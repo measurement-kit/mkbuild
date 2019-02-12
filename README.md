@@ -164,7 +164,7 @@ differs from the `github.com/measurement-kit/ci-common` one.
 
 ## AppVeyor
 
-The `.appveyor.yml` is exactly the same that we use now, that is:
+The `.appveyor.yml` is like the one that we use now, that is:
 
 ```YAML
 image: Visual Studio 2017
@@ -173,11 +173,12 @@ environment:
     - CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
     - CMAKE_GENERATOR: "Visual Studio 15 2017"
 build_script:
-  - cmd: git submodule update --init --recursive
   - cmd: cmake -G "%CMAKE_GENERATOR%"
   - cmd: cmake --build . -- /nologo /property:Configuration=Release
   - cmd: ctest --output-on-failure -C Release -a
 ```
+
+The main difference is that we don't need to update subrepos anymore.
 
 ## Next steps
 
