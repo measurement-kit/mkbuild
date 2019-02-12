@@ -223,8 +223,8 @@ func (cmake *CMakeFile) targetLinkLibraries(name string, libs []string) {
 	cmake.writeLine(fmt.Sprintf(")"))
 }
 
-// BuildExecutable defines an executable to be compiled.
-func (cmake *CMakeFile) BuildExecutable(name string, sources []string, libs []string) {
+// AddExecutable defines an executable to be compiled.
+func (cmake *CMakeFile) AddExecutable(name string, sources []string, libs []string) {
 	cmake.writeSectionComment(name)
 	cmake.writeLine(fmt.Sprintf("add_executable("))
 	cmake.writeLine(fmt.Sprintf("  %s", name))
@@ -235,8 +235,8 @@ func (cmake *CMakeFile) BuildExecutable(name string, sources []string, libs []st
 	cmake.targetLinkLibraries(name, libs)
 }
 
-// BuildLibrary defines a library to be compiled.
-func (cmake *CMakeFile) BuildLibrary(name string, sources []string, libs []string) {
+// AddLibrary defines a library to be compiled.
+func (cmake *CMakeFile) AddLibrary(name string, sources []string, libs []string) {
 	cmake.writeSectionComment(name)
 	cmake.writeLine(fmt.Sprintf("add_library("))
 	cmake.writeLine(fmt.Sprintf("  %s", name))
@@ -248,7 +248,7 @@ func (cmake *CMakeFile) BuildLibrary(name string, sources []string, libs []strin
 }
 
 // RunTest defines a test to be run
-func (cmake *CMakeFile) RunTest(name, command string) {
+func (cmake *CMakeFile) AddTest(name, command string) {
 	cmake.writeSectionComment("test: " + name)
 	cmake.writeLine(fmt.Sprintf("add_test("))
 	cmake.writeLine(fmt.Sprintf("  NAME %s COMMAND %s", name, command))

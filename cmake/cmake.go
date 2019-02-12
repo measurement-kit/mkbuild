@@ -21,12 +21,12 @@ func Generate(pkginfo *pkginfo.PkgInfo) {
 	}
 	cmake.FinalizeCompilerFlags()
 	for name, buildinfo := range pkginfo.Targets.Libraries {
-		cmake.BuildLibrary(name, buildinfo.Compile, buildinfo.Link)
+		cmake.AddLibrary(name, buildinfo.Compile, buildinfo.Link)
 	}
 	for name, buildinfo := range pkginfo.Targets.Executables {
-		cmake.BuildExecutable(name, buildinfo.Compile, buildinfo.Link)
+		cmake.AddExecutable(name, buildinfo.Compile, buildinfo.Link)
 	}
 	for name, testInfo := range pkginfo.Tests {
-		cmake.RunTest(name, testInfo.Command)
+		cmake.AddTest(name, testInfo.Command)
 	}
 }
