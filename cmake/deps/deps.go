@@ -51,6 +51,12 @@ var All = map[string]func(*cmakefile.CMakeFile){
 			cmake.AddRequiredLibrary("curl")
 		})
 	},
+	"github.com/measurement-kit/mkcurl": func(cmake *cmakefile.CMakeFile) {
+		cmake.AddSingleHeaderDependency(
+			"c9ddc132322cada3e443e15f6d2876b22490d7b491111ee45abeaf67c06cd596",
+			"https://raw.githubusercontent.com/measurement-kit/mkcurl/v0.9.2/mkcurl.hpp",
+		)
+	},
 	"github.com/measurement-kit/mkmock": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
 			"f07bc063a2e64484482f986501003e45ead653ea3f53fadbdb45c17a51d916d2",
