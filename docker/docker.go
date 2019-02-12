@@ -93,6 +93,7 @@ if [ $# -ne 1 ]; then
   echo "$USAGE" 1>&2
   exit 1
 fi
+
 docker run --cap-add=NET_ADMIN \
           -e CODECOV_TOKEN=$CODECOV_TOKEN \
           -e TRAVIS_BRANCH=$TRAVIS_BRANCH \
@@ -101,6 +102,24 @@ docker run --cap-add=NET_ADMIN \
           /mk/.ci/docker/run.sh "$1"
 `
 
+// writeSingleDockerScript writes a single docker script.
+func writeSingleDockerScript(pkginfo *pkginfo.PkgInfo, dirname, name, content string) {
+	tmpl := template.Must(template.New(name).Parse(content))
+	filename := dirname + "/" + name
+	filep, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
+	if err != nil {
+		log.WithError(err).Fatalf("cannot open file: %s", filename)
+	}
+	defer filep.Close()
+	err = tmpl.Execute(filep, map[string]string{
+		"CONTAINER_NAME": pkginfo.Docker,
+	})
+	if err != nil {
+		log.WithError(err).Fatalf("cannot write file: %s", filename)
+	}
+	log.Infof("Written %s", filename)
+}
+
 // writeDockerScripts writes the docker scripts.
 func writeDockerScripts(pkginfo *pkginfo.PkgInfo) {
 	dirname := ".ci/docker"
@@ -108,36 +127,8 @@ func writeDockerScripts(pkginfo *pkginfo.PkgInfo) {
 	if err != nil {
 		log.WithError(err).Fatalf("cannot create dir: %s", dirname)
 	}
-	{
-		tmpl := template.Must(template.New("run.sh").Parse(runSh))
-		filename := dirname + "/run.sh"
-		filep, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
-		if err != nil {
-			log.WithError(err).Fatalf("cannot open file: %s", filename)
-		}
-		defer filep.Close()
-		err = tmpl.Execute(filep, map[string]string{})
-		if err != nil {
-			log.WithError(err).Fatalf("cannot write file: %s", filename)
-		}
-		log.Infof("Written %s", filename)
-	}
-	{
-		tmpl := template.Must(template.New("trampoline.sh").Parse(trampolineSh))
-		filename := dirname + "/trampoline.sh"
-		filep, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
-		if err != nil {
-			log.WithError(err).Fatalf("cannot open file: %s", filename)
-		}
-		defer filep.Close()
-		err = tmpl.Execute(filep, map[string]string{
-			"CONTAINER_NAME": pkginfo.Docker,
-		})
-		if err != nil {
-			log.WithError(err).Fatalf("cannot write file: %s", filename)
-		}
-		log.Infof("Written %s", filename)
-	}
+	writeSingleDockerScript(pkginfo, dirname, "run.sh", runSh)
+	writeSingleDockerScript(pkginfo, dirname, "trampoline.sh", trampolineSh)
 }
 
 // Generate generates all the docker scripts.
