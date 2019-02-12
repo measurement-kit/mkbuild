@@ -44,11 +44,11 @@ var All = map[string]func(*cmakefile.CMakeFile){
 				LibName:    "libcurl.lib",
 				FuncName:   "curl_easy_init",
 			})
-			cmake.AddDefinition("-DCURL_STATICLIB")
+			cmake.AddRequiredDefinition("-DCURL_STATICLIB")
 		}, func() {
 			cmake.RequireHeaderExists("curl/curl.h")
 			cmake.RequireLibraryExists("curl", "curl_easy_init")
-			cmake.AddLibrary("curl")
+			cmake.AddRequiredLibrary("curl")
 		})
 	},
 	"github.com/measurement-kit/mkmock": func(cmake *cmakefile.CMakeFile) {

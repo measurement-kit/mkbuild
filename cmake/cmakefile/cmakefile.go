@@ -148,22 +148,22 @@ func (cmake *CMakeFile) untar(filename, destdir string) {
 	cmake.unzip(filename, destdir)
 }
 
-// AddDefinition adds |definition| to the macro definitions
-func (cmake *CMakeFile) AddDefinition(definition string) {
+// AddRequiredDefinition adds |definition| to the macro definitions
+func (cmake *CMakeFile) AddRequiredDefinition(definition string) {
 	cmake.writeLine(fmt.Sprintf(
 		"LIST(APPEND CMAKE_REQUIRED_DEFINITIONS %s)", definition,
 	))
 }
 
-// AddIncludeDir adds |path| to the header search path
-func (cmake *CMakeFile) AddIncludeDir(path string) {
+// AddRequiredIncludeDir adds |path| to the header search path
+func (cmake *CMakeFile) AddRequiredIncludeDir(path string) {
 	cmake.writeLine(fmt.Sprintf(
 		"LIST(APPEND CMAKE_REQUIRED_INCLUDES \"%s\")", path,
 	))
 }
 
-// AddLibrary adds |library| to the libraries to include
-func (cmake *CMakeFile) AddLibrary(library string) {
+// AddRequiredLibrary adds |library| to the libraries to link with
+func (cmake *CMakeFile) AddRequiredLibrary(library string) {
 	cmake.writeLine(fmt.Sprintf(
 		"LIST(APPEND CMAKE_REQUIRED_LIBRARIES \"%s\")", library,
 	))
@@ -263,7 +263,7 @@ func (cmake *CMakeFile) AddSingleHeaderDependency(SHA256, URL string) {
 	filename := dirname + "/" + headerName
 	cmake.mkdirAll(dirname)
 	cmake.download(filename, SHA256, URL)
-	cmake.AddIncludeDir(dirname)
+	cmake.AddRequiredIncludeDir(dirname)
 	cmake.RequireHeaderExists(headerName)
 }
 
@@ -310,10 +310,10 @@ func (cmake *CMakeFile) Win32InstallPrebuilt(info *prebuilt.Info) {
 	basedir := "${CMAKE_BINARY_DIR}/.mkbuild/download/" + info.Prefix + "/${MK_WIN32_ARCH}"
 	includedirname := basedir + "/include"
 	libnameFull := basedir + "/lib/" + info.LibName
-	cmake.AddIncludeDir(includedirname)
+	cmake.AddRequiredIncludeDir(includedirname)
 	cmake.RequireHeaderExists(info.HeaderName)
 	cmake.RequireLibraryExists(libnameFull, info.FuncName)
-	cmake.AddLibrary(libnameFull)
+	cmake.AddRequiredLibrary(libnameFull)
 }
 
 // downloadAndExtractArchive downloads and extracts and archive
