@@ -13,7 +13,7 @@ func Generate(pkginfo *pkginfo.PkgInfo) {
 	cmake := cmakefile.Open(pkginfo.Name)
 	defer cmake.Close()
 	for _, depname := range pkginfo.Dependencies {
-		handler, ok := deps.Rules[depname]
+		handler, ok := deps.All[depname]
 		if !ok {
 			log.Fatalf("unknown dependency: %s", depname)
 		}

@@ -8,8 +8,8 @@ import (
 	"github.com/bassosimone/mkbuild/cmake/cmakefile/prebuilt"
 )
 
-// Rules contains all the build rules that we know of.
-var Rules = map[string]func(*cmakefile.CMakeFile){
+// All contains all the dependencies that we know of.
+var All = map[string]func(*cmakefile.CMakeFile){
 	"curl.haxx.se/ca": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleFileAsset(
 			"c1fd9b235896b1094ee97bfb7e042f93530b5e300781f59b45edf84ee8c75000",
