@@ -4,7 +4,7 @@ package cmake
 import (
 	"github.com/apex/log"
 	"github.com/bassosimone/mkbuild/cmake/cmakefile"
-	"github.com/bassosimone/mkbuild/cmake/rules"
+	"github.com/bassosimone/mkbuild/cmake/deps"
 	"github.com/bassosimone/mkbuild/pkginfo"
 )
 
@@ -13,7 +13,7 @@ func Generate(pkginfo *pkginfo.PkgInfo) {
 	cmake := cmakefile.Open(pkginfo.Name)
 	defer cmake.Close()
 	for _, depname := range pkginfo.Dependencies {
-		handler, ok := rules.Rules[depname]
+		handler, ok := deps.Rules[depname]
 		if !ok {
 			log.Fatalf("unknown dependency: %s", depname)
 		}

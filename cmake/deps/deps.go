@@ -1,5 +1,5 @@
-// Package rules contains the build rules.
-package rules
+// Package deps contains dependency related rules.
+package deps
 
 import (
 	"fmt"

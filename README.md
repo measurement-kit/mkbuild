@@ -54,7 +54,7 @@ docker container to use, `dependencies` lists the IDs of the dependencies
 you want to download and install, `targets` tells us what artifacts you
 want to build, and `tests` what tests to execute.
 
-See `cmake/rules/rules.go` for all the available deps IDs. Dependencies
+See `cmake/deps/deps.go` for all the available deps IDs. Dependencies
 that are libraries will be automatically downloaded for Windows, but
 must be installed on Unix. If a dependency is not installed on Unix,
 the related `cmake` check will fail when running `cmake` later on. The
