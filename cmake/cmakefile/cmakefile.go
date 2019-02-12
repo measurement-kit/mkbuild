@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/bassosimone/mkbuild/autogen/cmakefile/restrictiveflags"
-	"github.com/bassosimone/mkbuild/autogen/prebuilt"
+	"github.com/bassosimone/mkbuild/cmake/cmakefile/restrictiveflags"
+	"github.com/bassosimone/mkbuild/cmake/prebuilt"
 )
 
 // CMakeFile is a CMakeListst.txt file

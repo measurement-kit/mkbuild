@@ -4,8 +4,8 @@ package rules
 import (
 	"fmt"
 
-	"github.com/bassosimone/mkbuild/autogen/cmakefile"
-	"github.com/bassosimone/mkbuild/autogen/prebuilt"
+	"github.com/bassosimone/mkbuild/cmake/cmakefile"
+	"github.com/bassosimone/mkbuild/cmake/prebuilt"
 )
 
 // Rules contains all the build rules that we know of.

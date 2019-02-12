@@ -1,14 +1,14 @@
-// Package autogen allows to autogenerate a build system
-package autogen
+// Package cmake generates a CMakeLists.txt
+package cmake
 
 import (
 	"github.com/apex/log"
-	"github.com/bassosimone/mkbuild/autogen/cmakefile"
-	"github.com/bassosimone/mkbuild/autogen/rules"
+	"github.com/bassosimone/mkbuild/cmake/cmakefile"
+	"github.com/bassosimone/mkbuild/cmake/rules"
 	"github.com/bassosimone/mkbuild/pkginfo"
 )
 
-// Generate generates a cmake based build system.
+// Generate generates a CMakeLists.txt file.
 func Generate(pkginfo *pkginfo.PkgInfo) {
 	cmake := cmakefile.Open(pkginfo.Name)
 	defer cmake.Close()
