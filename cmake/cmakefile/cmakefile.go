@@ -180,7 +180,7 @@ func (cmake *CMakeFile) checkPlatformCheckResult(item, variable string) {
 
 // RequireHeaderExists requires that |header| exists.
 func (cmake *CMakeFile) RequireHeaderExists(header string) {
-	variable := "MK_HAVE_HEADER"
+	variable := fmt.Sprintf("MK_HAVE_HEADER_%d", cmake.output.Len())
 	cmake.writeLine(fmt.Sprintf(
 		"CHECK_INCLUDE_FILE_CXX(\"%s\" %s)", header, variable,
 	))
@@ -189,7 +189,7 @@ func (cmake *CMakeFile) RequireHeaderExists(header string) {
 
 // RequireLibraryExists requires that |function| exists in |library|.
 func (cmake *CMakeFile) RequireLibraryExists(library, function string) {
-	variable := "MK_HAVE_LIB"
+	variable := fmt.Sprintf("MK_HAVE_LIB_%d", cmake.output.Len())
 	cmake.writeLine(fmt.Sprintf(
 		"CHECK_LIBRARY_EXISTS(\"%s\" \"%s\" \"\" %s)", library, function, variable,
 	))
