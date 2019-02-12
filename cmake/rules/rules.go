@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bassosimone/mkbuild/cmake/cmakefile"
-	"github.com/bassosimone/mkbuild/cmake/prebuilt"
+	"github.com/bassosimone/mkbuild/cmake/cmakefile/prebuilt"
 )
 
 // Rules contains all the build rules that we know of.
