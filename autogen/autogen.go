@@ -8,8 +8,8 @@ import (
 	"github.com/bassosimone/mkbuild/pkginfo"
 )
 
-// Run implements the autogen subcommand.
-func Run(pkginfo *pkginfo.PkgInfo) {
+// Generate generates a cmake based build system.
+func Generate(pkginfo *pkginfo.PkgInfo) {
 	cmake := cmake.Open(pkginfo.Name)
 	defer cmake.Close()
 	for _, depname := range pkginfo.Dependencies {

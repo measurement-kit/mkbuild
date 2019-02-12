@@ -129,8 +129,8 @@ func writeDockerScripts(pkginfo *pkginfo.PkgInfo) {
 	}
 }
 
-// Run implements the docker subcommand.
-func Run(pkginfo *pkginfo.PkgInfo, buildType string) {
+// Generate generates all the docker scripts.
+func Generate(pkginfo *pkginfo.PkgInfo) {
 	if pkginfo.Docker == "" {
 		log.Fatal("no docker container specified")
 	}
