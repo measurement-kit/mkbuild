@@ -1,8 +1,7 @@
 # MKBuild
 
-MKBuild (1) generates a complex `CMakeLists.txt` from a simpler YAML based
-definition of the build and (2) allows to easily run a specific build using
-Docker to perform the build and testing in a specific container.
+MKBuild (1) generates a `CMakeLists.txt` and (2) scripts for testing on
+a Docker container from a simple YAML based definition.
 
 ## Getting the software
 
@@ -10,10 +9,10 @@ Docker to perform the build and testing in a specific container.
 go get -v github.com/bassosimone/mkbuild
 ```
 
-## Autogenerating CMakeLists.txt
+## (Re)generating build and test scripts.
 
-Create a YAML file named `MKBuild.yaml` in the toplevel directory of your
-project and write inside it something similar to:
+Create (or update) a YAML file named `MKBuild.yaml` in the toplevel
+directory of your project. This file should look like this:
 
 ```YAML
 name: mkcurl
@@ -46,112 +45,109 @@ tests:
     command: tests
   integration_tests:
     command: integration-tests
-  external_ca:
-    command: mkcurl-client --ca-bundle-path ./.mkbuild/data/cacert.pem
-      https://www.kernel.org
-  http11_test:
-    command: mkcurl-client https://ooni.torproject.org
-  using_timeout:
-    command: mkcurl-client --timeout 10 --follow-redirect
-      https://www.facebook.com
   redirect_test:
     command: mkcurl-client --follow-redirect http://google.com
-  post:
-    command: mkcurl-client --post --data "{\"net-tests\":[]}"
-      https://httpbin.org/post
-  put:
-    command: mkcurl-client --put --data "{\"net-tests\":[]}"
-      https://httpbin.org/put
-  connect_to:
-    command: mkcurl-client --connect-to www.google.com https://www.youtube.com
 ```
 
-Where `name` is the name of the project, `dependencies` is a list containing
-the IDs of the dependencies you want to download and install, `targets` tells
-us what artifacts you want to build, and `tests` what tests to execute.
+Where `name` is the name of the project, `docker` is the name of the
+docker container to use, `dependencies` lists the IDs of the dependencies
+you want to download and install, `targets` tells us what artifacts you
+want to build, and `tests` what tests to execute.
 
-See `autogen/rules/rules.go` for all the available IDs. Dependencies that
-are libraries will be automatically downloaded for Windows, but must be
-installed on Unix. If a dependency is not installed on Unix, the related
-`cmake` check will fail when running `cmake` later on. The build flags will
-be automatically adjusted to account for finding the dependencies headers
-and for automatically linking all targets with dependencies.
+See `cmake/rules/rules.go` for all the available deps IDs. Dependencies
+that are libraries will be automatically downloaded for Windows, but
+must be installed on Unix. If a dependency is not installed on Unix,
+the related `cmake` check will fail when running `cmake` later on. The
+build flags will be automatically adjusted to account for compiling and
+linking with the specified dependencies.
 
-The `libraries` key specifies what libraries to build and the `executables`
-key what executables to build. Both contain targets names mapping to build
-information for a target. The build information is composed of two keys,
-`compile`, which indicates which sources to compile, and `link`, which
-indicates which _extra_ libraries to link. If you're building, like in the
-above example, a library named `foo`, you can refer to it later in the
-`link` section of another target simply as `foo`.
+The `libraries` key specifies what libraries to build and the
+`executables` key what executables to build. Both contain targets names
+mapping to build information for a target. The build information is
+composed of two keys, `compile`, which indicates which sources to compile,
+and `link`, which indicates which _extra_ libraries to link. (Remember
+that dependencies will automatically be accounted for, so you don't
+need to say you want to link with them explicitly.) If you're building,
+like in the above example, a library named `foo`, you can refer to it
+later in the `link` section of another target simply as `foo`.
 
 The `tests` indicates what test to run. Each key inside `tests` is the name
 of a test. The `command` key indicates what command to execute.
 
-One you've written you `MKBuild.yaml`, run
+One you've written (or updated) your `MKBuild.yaml`, run
 
 ```
-mkbuild autogen
+mkbuild
 ```
 
-This will generate a `CMakeLists.txt` file. From there on, just follow the
-standard procedures to build with `cmake`. Note that dependencies will be
-downloaded and configured by `cmake`, not by `mkbuild`, which just generates
-a suitable `CMakeLists.txt` file to perform the task.
+This will generate (or update) thee files:
 
-## Running a build in Docker
+1. `CMakeLists.txt`
 
-To run a build in docker, you should know about the type of builds that
-are available. To this end, see `docker/docker.go`. The simples build
-type is the `vanilla` build. Since this is a personal project, the docker
-image that we'll use is the one used by Measurement Kit builds.
+2. `.ci/docker/trampoline.sh`
 
-By running, e.g.
+3. `.ci/docker/run.sh`
+
+You should commit these files to the repository.
+
+The `CMakeLists.txt` file will contain the rules to download and use
+the dependencies, build the required artifacts, and run the tests. Every
+run of `mkbuild` updates this file with the latest known version of the
+dependencies. That is, we don't support version pinning, as we aim to live
+as close to the latest version of the dependencies as possible.
+
+The `.ci/docker/trampoline.sh` contains the code to run the `run.sh`
+script inside a specific Docker container. The `run.sh` script contains
+code to run several kind of Linux based, CMake based builds, including
+for example `asan`, `tsan`, and coverage builds.
+
+## Build instructions
+
+Since `mkbuild` generates a `CMakeLists.txt` and we suggest to commit
+it to your repository, the build instructions are the standard build
+instructions of any CMake based software project.
+
+## Running a build using Docker
+
+Provided that you have Docker installed, running a docker based
+build is as simple as running:
 
 ```
-mkbuild docker vanilla
+./.ci/docker/trampoline.sh <build-type>
 ```
 
-you will cause `mkbuild` to write a special bourne shell script in a
-hidden directory and to launch `docker`, with the above mentioned docker
-image, such that this script is run inside the container.
-
-Such script will rebuild `mkbuild` inside the container and then use
-it to perform the selected kind of build. This will basically boil down
-to calling `mkbuild autogen` to generate a `CMakeLists.txt` and
-then following the typical steps of a `cmake` build.
+Run `trampoline.sh` without arguments to see the available build types.
 
 ## Rationale
 
 This software is meant to replace the `github.com/measurement-kit/cmake-utils`
 and `github.com/measurement-kit/ci-scripts` subrepositories. Rather than
-having to keep the submodules up to date, like we do, e.g., in `mkcurl`, one
-`go get`s the latest `mkbuild` during a build to obtain the same result.
+having to keep the submodules up to date, we automatically generate files
+and scripts implementing the same functionality.
 
-The main difference is that there is no need to keep in sync all the submodules
-of the many small repositories I've created in `gitub.com/measurement-kit`. More
-details in the following subsections.
+Because this tool generates standalone `CMakeLists.txt` and shell scripts, it
+means that it can easily be replaced with better tools, or no tools, in the
+future, without any annoyance. Yet, the burden of keeping in sync the subrepos
+is gone and it is replaced with the much lower burden of running `mkbuild`
+from time to time to stay in sync.
 
-Also, even in case I'm doing it wrong, it's still possible to cut
-this tool of the build by commiting the `CMakeLists.txt`. Also,
-in case we want to have ready-to-use tarballs for release (I doubt
-it), we can generate a tarball with a `CMakeLists.txt` in it.
+An earlier design of this tool was such that `CMakeLists.txt` and the scripts
+were not committed to the repository. Yet, this is probably not advisable as
+it may lead to non reproducible continuous integration builds, because the
+newly generated CMakeLists.txt or scripts may differ. In any case, should we
+decided that _not committing_ `CMakeLists.txt` and the scripts into the
+repository is instead better, we just need to update the build instructions
+to mention to compile and run `mkbuild` as the first step.
 
 ## Travis CI
 
 The `.travis.yml` file should look like
 
 ```YAML
-language: go
-
-go:
-- 1.11
-
+language: c++
 services:
   - docker
-
 sudo: required
-
 matrix:
   include:
     - env: BUILD_TYPE="asan"
@@ -159,41 +155,31 @@ matrix:
     - env: BUILD_TYPE="coverage"
     - env: BUILD_TYPE="ubsan"
     - env: BUILD_TYPE="vanilla"
-
 script:
-  - go get -v github.com/bassosimone/mkbuild
-  - $GOPATH/bin/mkbuild docker $BUILD_TYPE
+  - ./.ci/docker/trampoline.sh $BUILD_TYPE
 ```
 
-It only minimally more complex than what was required by `ci-common`
-and `cmake-modules`.
+This is equal to what we have now, _except_ that the name of the script
+differs from the `github.com/measurement-kit/ci-common` one.
 
 ## AppVeyor
 
-The `.appveyor.yml` file should look like:
+The `.appveyor.yml` is exactly the same that we use now, that is:
 
 ```YAML
 image: Visual Studio 2017
-
 environment:
-  GOPATH: c:/gopath
-  GOVERSION: 1.11
   matrix:
     - CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
     - CMAKE_GENERATOR: "Visual Studio 15 2017"
-
 build_script:
-  - cmd: go get -v github.com/bassosimone/mkbuild
-  - cmd: "%GOPATH%/bin/mkbuild.exe autogen"
+  - cmd: git submodule update --init --recursive
   - cmd: cmake -G "%CMAKE_GENERATOR%"
   - cmd: cmake --build . -- /nologo /property:Configuration=Release
   - cmd: ctest --output-on-failure -C Release -a
 ```
 
-It only minimally more complex than what was required by `ci-common`
-and `cmake-modules`.
-
 ## Next steps
 
-If testing proves that this is really more convenient, I will
+If testing proves that this repository is really more convenient, I will
 most likely migrate it into the `measurement-kit` namespace.
