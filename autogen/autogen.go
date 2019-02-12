@@ -3,14 +3,14 @@ package autogen
 
 import (
 	"github.com/apex/log"
-	"github.com/bassosimone/mkbuild/autogen/cmake"
+	"github.com/bassosimone/mkbuild/autogen/cmakefile"
 	"github.com/bassosimone/mkbuild/autogen/rules"
 	"github.com/bassosimone/mkbuild/pkginfo"
 )
 
 // Generate generates a cmake based build system.
 func Generate(pkginfo *pkginfo.PkgInfo) {
-	cmake := cmake.Open(pkginfo.Name)
+	cmake := cmakefile.Open(pkginfo.Name)
 	defer cmake.Close()
 	for _, depname := range pkginfo.Dependencies {
 		handler, ok := rules.Rules[depname]

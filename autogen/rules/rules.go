@@ -4,31 +4,31 @@ package rules
 import (
 	"fmt"
 
-	"github.com/bassosimone/mkbuild/autogen/cmake"
+	"github.com/bassosimone/mkbuild/autogen/cmakefile"
 	"github.com/bassosimone/mkbuild/autogen/prebuilt"
 )
 
 // Rules contains all the build rules that we know of.
-var Rules = map[string]func(*cmake.CMake){
-	"curl.haxx.se/ca": func(cmake *cmake.CMake) {
+var Rules = map[string]func(*cmakefile.CMakeFile){
+	"curl.haxx.se/ca": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleFileAsset(
 			"c1fd9b235896b1094ee97bfb7e042f93530b5e300781f59b45edf84ee8c75000",
 			"https://curl.haxx.se/ca/cacert.pem",
 		)
 	},
-	"github.com/adishavit/argh": func(cmake *cmake.CMake) {
+	"github.com/adishavit/argh": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
 			"ddb7dfc18dcf90149735b76fb2cff101067453a1df1943a6911233cb7085980c",
 			"https://raw.githubusercontent.com/adishavit/argh/v1.3.0/argh.h",
 		)
 	},
-	"github.com/catchorg/catch2": func(cmake *cmake.CMake) {
+	"github.com/catchorg/catch2": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
 			"5eb8532fd5ec0d28433eba8a749102fd1f98078c5ebf35ad607fb2455a000004",
 			"https://github.com/catchorg/Catch2/releases/download/v2.3.0/catch.hpp",
 		)
 	},
-	"github.com/curl/curl": func(cmake *cmake.CMake) {
+	"github.com/curl/curl": func(cmake *cmakefile.CMakeFile) {
 		cmake.IfWIN32(func() {
 			version := "7.61.1-1"
 			cmake.Win32InstallPrebuilt(&prebuilt.Info{
@@ -51,7 +51,7 @@ var Rules = map[string]func(*cmake.CMake){
 			cmake.AddLibrary("curl")
 		})
 	},
-	"github.com/measurement-kit/mkmock": func(cmake *cmake.CMake) {
+	"github.com/measurement-kit/mkmock": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
 			"f07bc063a2e64484482f986501003e45ead653ea3f53fadbdb45c17a51d916d2",
 			"https://raw.githubusercontent.com/measurement-kit/mkmock/v0.2.0/mkmock.hpp",
