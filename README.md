@@ -132,28 +132,6 @@ build is as simple as running:
 Run `docker.sh` without arguments to see the available build types. The
 names of the build types should be self explanatory.
 
-## Rationale
-
-This software is meant to replace the [github.com/measurement-kit/cmake-utils](
-https://github.com/measurement-kit/cmake-utils) and
-[github.com/measurement-kit/ci-common](
-github.com/measurement-kit/ci-common) subrepositories. Rather than
-having to keep the submodules up to date, we automatically generate files
-and scripts implementing the same functionality.
-
-Because this tool generates standalone `CMakeLists.txt` and `docker.sh`, it
-means that it can easily be replaced with better tools, or no tools. Yet, the
-burden of keeping in sync the subrepos is gone and it is replaced with the
-much lower burden of running `mkbuild` from time to time to sync.
-
-An earlier design of this tool was such that `CMakeLists.txt` and
-`docker.sh` were not committed to the repository. Yet, this is probably
-not advisable since it may lead to non reproducible builds, because
-the newly generated `CMakeLists.txt` and/or `docker.sh` may differ. In
-any case, should we decided that _not committing_ these files into
-the repository is instead better, we just need to update the build
-instructions to mention to compile and run `mkbuild` as the first step.
-
 ## Travis CI
 
 The `.travis.yml` file should look like:
@@ -195,3 +173,25 @@ build_script:
 
 The main difference is that we don't need to force `git` to update
 the subrepos anymore.
+
+## Rationale
+
+This software is meant to replace the [github.com/measurement-kit/cmake-utils](
+https://github.com/measurement-kit/cmake-utils) and
+[github.com/measurement-kit/ci-common](
+github.com/measurement-kit/ci-common) subrepositories. Rather than
+having to keep the submodules up to date, we automatically generate files
+and scripts implementing the same functionality.
+
+Because this tool generates standalone `CMakeLists.txt` and `docker.sh`, it
+means that it can easily be replaced with better tools, or no tools. Yet, the
+burden of keeping in sync the subrepos is gone and it is replaced with the
+much lower burden of running `mkbuild` from time to time to sync.
+
+An earlier design of this tool was such that `CMakeLists.txt` and
+`docker.sh` were not committed to the repository. Yet, this is probably
+not advisable since it may lead to non reproducible builds, because
+the newly generated `CMakeLists.txt` and/or `docker.sh` may differ. In
+any case, should we decided that _not committing_ these files into
+the repository is instead better, we just need to update the build
+instructions to mention to compile and run `mkbuild` as the first step.
