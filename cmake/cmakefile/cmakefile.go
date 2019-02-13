@@ -114,9 +114,9 @@ func (cmake *CMakeFile) download(filename, SHA256, URL string) {
 
 // checkCommandError writes the code to check for errors after a
 // command has been executed.
-func (cmake *CMakeFile) checkCommandError() {
-	cmake.writeLine(fmt.Sprintf("if(\"${FAILURE}\")"))
-	cmake.writeLine(fmt.Sprintf("  message(FATAL_ERROR \"${FAILURE}\")"))
+func (cmake *CMakeFile) checkCommandError(variable string) {
+	cmake.writeLine(fmt.Sprintf("if(\"${%s}\")", variable))
+	cmake.writeLine(fmt.Sprintf("  message(FATAL_ERROR \"${%s}\")", variable))
 	cmake.writeLine(fmt.Sprintf("endif()"))
 }
 
@@ -127,8 +127,9 @@ func (cmake *CMakeFile) mkdirAll(destdirs string) {
 	cmake.writeLine(fmt.Sprintf(
 		"  ${CMAKE_COMMAND} -E make_directory \"%s\"", destdirs,
 	))
-	cmake.writeLine(fmt.Sprintf("  RESULT_VARIABLE FAILURE)"))
-	cmake.checkCommandError()
+	variable := fmt.Sprintf("FAILURE_%d", cmake.output.Len())
+	cmake.writeLine(fmt.Sprintf("  RESULT_VARIABLE %s)", variable))
+	cmake.checkCommandError(variable)
 }
 
 // unzip extracts |filename| in |destdir|.
@@ -139,8 +140,9 @@ func (cmake *CMakeFile) unzip(filename, destdir string) {
 		"  ${CMAKE_COMMAND} -E tar xf \"%s\"", filename,
 	))
 	cmake.writeLine(fmt.Sprintf("  WORKING_DIRECTORY \"%s\"", destdir))
-	cmake.writeLine(fmt.Sprintf("  RESULT_VARIABLE FAILURE)"))
-	cmake.checkCommandError()
+	variable := fmt.Sprintf("FAILURE_%d", cmake.output.Len())
+	cmake.writeLine(fmt.Sprintf("  RESULT_VARIABLE %s)", variable))
+	cmake.checkCommandError(variable)
 }
 
 // untar extracts |filename| in |destdir|.
