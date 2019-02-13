@@ -166,7 +166,7 @@ environment:
     - CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
     - CMAKE_GENERATOR: "Visual Studio 15 2017"
 build_script:
-  - cmd: cmake -G "%CMAKE_GENERATOR%"
+  - cmd: cmake -G "%CMAKE_GENERATOR%" .
   - cmd: cmake --build . -- /nologo /property:Configuration=Release
   - cmd: ctest --output-on-failure -C Release -a
 ```
