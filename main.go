@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
-	"github.com/bassosimone/mkbuild/cmake"
-	"github.com/bassosimone/mkbuild/docker"
-	"github.com/bassosimone/mkbuild/pkginfo"
+	"github.com/measurement-kit/mkbuild/cmake"
+	"github.com/measurement-kit/mkbuild/docker"
+	"github.com/measurement-kit/mkbuild/pkginfo"
 )
 
 func main() {

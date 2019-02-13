@@ -3,9 +3,9 @@ package cmake
 
 import (
 	"github.com/apex/log"
-	"github.com/bassosimone/mkbuild/cmake/cmakefile"
-	"github.com/bassosimone/mkbuild/cmake/deps"
-	"github.com/bassosimone/mkbuild/pkginfo"
+	"github.com/measurement-kit/mkbuild/cmake/cmakefile"
+	"github.com/measurement-kit/mkbuild/cmake/deps"
+	"github.com/measurement-kit/mkbuild/pkginfo"
 )
 
 // Generate generates a CMakeLists.txt file.

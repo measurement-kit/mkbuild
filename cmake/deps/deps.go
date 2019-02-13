@@ -4,8 +4,8 @@ package deps
 import (
 	"fmt"
 
-	"github.com/bassosimone/mkbuild/cmake/cmakefile"
-	"github.com/bassosimone/mkbuild/cmake/cmakefile/prebuilt"
+	"github.com/measurement-kit/mkbuild/cmake/cmakefile"
+	"github.com/measurement-kit/mkbuild/cmake/cmakefile/prebuilt"
 )
 
 // All contains all the dependencies that we know of.

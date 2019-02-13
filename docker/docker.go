@@ -6,7 +6,7 @@ import (
 	"text/template"
 
 	"github.com/apex/log"
-	"github.com/bassosimone/mkbuild/pkginfo"
+	"github.com/measurement-kit/mkbuild/pkginfo"
 )
 
 // dockerSh is the script to run a build inside a docker container.
