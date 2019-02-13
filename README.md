@@ -63,7 +63,7 @@ tests:
 Where `name` is the name of the project, `docker` is the name of the
 docker container to use, `dependencies` lists the IDs of the dependencies
 you want to download and install, `targets` tells us what artifacts you
-want to build, and `tests` what tests to execute.
+want to build, and `tests` what tests to executed.
 
 See `cmake/deps/deps.go` for all the available deps IDs. Dependencies
 that compile to static/shared libraries (e.g. `libcurl`) will be downloaded
@@ -71,20 +71,27 @@ automatically on Windows, and must be already installed on Unix systems. If a
 dependency is not already installed on Unix, the related `cmake` check will
 fail when running `cmake` later on. The build flags will be automatically
 adjusted to account for a dependency (e.g. `CXXFLAGS` and `LDFLAGS` will be
-linked to use cURL's headers and libraries).
+updated to use cURL's headers and libraries).
 
 The `libraries` key specifies what libraries to build and the
-`executables` key what executables to build. Both contain targets names
-mapping to build information for a target. The build information is
-composed of two keys, `compile`, which indicates which sources to compile,
-and `link`, which indicates which libraries to link. You do not need to
-list here the dependencies, but you can list here libraries built as part
-of the local build. In the above example, the `integration-tests` binary
+`executables` key what executables to build. Both contain maps where the
+target name maps to build information. Depending on the system, proper
+file extensions and prefixes will be added. In the above example, the
+instructions require us to build a library called `mkcurl`, which will
+become `libmkcurl.a` on Unix and `mkcurl.lib` on Windows. (This is
+done for us by CMake and is actually how CMake works.)
+
+The build information is composed of two keys, `compile`, which indicates which
+sources to compile, and `link`, which indicates which libraries to link. You
+do not need to list here the dependencies, since they're already added
+automatically, as mentioned above. But you can list here libraries built as part
+of the current build. In the above example, the `integration-tests` binary
 will link with the (static) library called `mkcurl`, in addition to linking
 to all the libraries implied by the declared dependencies.
 
 The `tests` key indicates what test to run. Each key inside `tests` is the name
-of a test. The `command` key indicates what command to execute.
+of a test. The `command` key indicates what command to execute. Of course, the
+command line arguments can be quoted, if required.
 
 ## (Re)Generating CMakeLists.txt and docker.sh
 
@@ -102,7 +109,16 @@ You should commit these files to the repository.
 
 Since `mkbuild` generates a `CMakeLists.txt` and we suggest to commit
 it to your repository, the build instructions are the standard build
-instructions of any CMake based software project.
+instructions of any CMake based software project (we tend to use
+`ninja`, so the following instructions use `ninja`):
+
+```
+mkdir build
+cd build
+cmake -GNinja ..
+cmake --build .
+ctest -a -j8 --output-on-failure
+```
 
 ## Running a build using Docker
 
@@ -118,8 +134,10 @@ names of the build types should be self explanatory.
 
 ## Rationale
 
-This software is meant to replace the `github.com/measurement-kit/cmake-utils`
-and `github.com/measurement-kit/ci-scripts` subrepositories. Rather than
+This software is meant to replace the [github.com/measurement-kit/cmake-utils](
+https://github.com/measurement-kit/cmake-utils) and
+[github.com/measurement-kit/ci-common](
+github.com/measurement-kit/ci-common) subrepositories. Rather than
 having to keep the submodules up to date, we automatically generate files
 and scripts implementing the same functionality.
 
@@ -128,13 +146,13 @@ means that it can easily be replaced with better tools, or no tools. Yet, the
 burden of keeping in sync the subrepos is gone and it is replaced with the
 much lower burden of running `mkbuild` from time to time to sync.
 
-An earlier design of this tool was such that `CMakeLists.txt` and `docker.sh`
-were not committed to the repository. Yet, this is probably not advisable since
-it may lead to non reproducible continuous integration builds, because the
-newly generated `CMakeLists.txt` and/or `docker.sh` may differ. In any case,
-should we decided that _not committing_ these files into the repository is
-instead better, we just need to update the build instructions to mention to
-compile and run `mkbuild` as the first step.
+An earlier design of this tool was such that `CMakeLists.txt` and
+`docker.sh` were not committed to the repository. Yet, this is probably
+not advisable since it may lead to non reproducible builds, because
+the newly generated `CMakeLists.txt` and/or `docker.sh` may differ. In
+any case, should we decided that _not committing_ these files into
+the repository is instead better, we just need to update the build
+instructions to mention to compile and run `mkbuild` as the first step.
 
 ## Travis CI
 
@@ -157,7 +175,7 @@ script:
 ```
 
 This is equal to what we have now, _except_ that the name of the script
-differs from the `github.com/measurement-kit/ci-common` one.
+to run docker is now different.
 
 ## AppVeyor
 
@@ -175,4 +193,5 @@ build_script:
   - cmd: ctest --output-on-failure -C Release -a
 ```
 
-The main difference is that we don't need to update subrepos anymore.
+The main difference is that we don't need to force `git` to update
+the subrepos anymore.
