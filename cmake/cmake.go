@@ -2,11 +2,31 @@
 package cmake
 
 import (
+	"sort"
+
 	"github.com/apex/log"
 	"github.com/measurement-kit/mkbuild/cmake/cmakefile"
 	"github.com/measurement-kit/mkbuild/cmake/deps"
 	"github.com/measurement-kit/mkbuild/pkginfo"
 )
+
+func sortedBuildInfo(m map[string]pkginfo.BuildInfo) []string {
+	var res []string
+	for k, _ := range m {
+		res = append(res, k)
+	}
+	sort.Strings(res)
+	return res
+}
+
+func sortedTestInfo(m map[string]pkginfo.TestInfo) []string {
+	var res []string
+	for k, _ := range m {
+		res = append(res, k)
+	}
+	sort.Strings(res)
+	return res
+}
 
 // Generate generates a CMakeLists.txt file.
 func Generate(pkginfo *pkginfo.PkgInfo) {
@@ -20,13 +40,16 @@ func Generate(pkginfo *pkginfo.PkgInfo) {
 		handler(cmake)
 	}
 	cmake.FinalizeCompilerFlags()
-	for name, buildinfo := range pkginfo.Targets.Libraries {
+	for _, name := range sortedBuildInfo(pkginfo.Targets.Libraries) {
+		buildinfo := pkginfo.Targets.Libraries[name]
 		cmake.AddLibrary(name, buildinfo.Compile, buildinfo.Link)
 	}
-	for name, buildinfo := range pkginfo.Targets.Executables {
+	for _, name := range sortedBuildInfo(pkginfo.Targets.Executables) {
+		buildinfo := pkginfo.Targets.Executables[name]
 		cmake.AddExecutable(name, buildinfo.Compile, buildinfo.Link)
 	}
-	for name, testInfo := range pkginfo.Tests {
-		cmake.AddTest(name, testInfo.Command)
+	for _, name := range sortedTestInfo(pkginfo.Tests) {
+		testinfo := pkginfo.Tests[name]
+		cmake.AddTest(name, testinfo.Command)
 	}
 }
