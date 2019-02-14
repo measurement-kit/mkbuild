@@ -87,6 +87,12 @@ var All = map[string]func(*cmakefile.CMakeFile){
 			"https://github.com/measurement-kit/generic-assets/releases/download/20190205/generic-assets-20190205.tar.gz",
 		)
 	},
+	"github.com/measurement-kit/mkbouncer": func(cmake *cmakefile.CMakeFile) {
+		cmake.AddSingleHeaderDependency(
+			"b6d8cf8ce7c832b20997cbd2d2a33dbaf80a347eea4073173a7d8c1ef8f176ab",
+			"https://raw.githubusercontent.com/measurement-kit/mkbouncer/v0.1.0/mkbouncer.hpp",
+		)
+	},
 	"github.com/measurement-kit/mkcurl": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
 			"1f301bb3d8e254a8ee40eac44373c2cfa9648d0d3ea96485e9231817aaf18076",
