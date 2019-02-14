@@ -53,6 +53,28 @@ var All = map[string]func(*cmakefile.CMakeFile){
 			cmake.AddRequiredLibrary("curl")
 		})
 	},
+	"github.com/maxmind/libmaxminddb": func(cmake *cmakefile.CMakeFile) {
+		cmake.IfWIN32(func() {
+			version := "1.3.2-2"
+			cmake.Win32InstallPrebuilt(&prebuilt.Info{
+				SHA256: "542933912814ac518037bd26083d0bba9daf68084f43c5cf2d7ec944d62b9ebb",
+				URL: fmt.Sprintf(
+					"%s/%s/windows-libmaxminddb-%s.tar.gz",
+					"https://github.com/measurement-kit/prebuilt/releases/download/",
+					"testing",
+					version,
+				),
+				Prefix:     "MK_DIST/windows/libmaxminddb/" + version,
+				HeaderName: "maxminddb.h",
+				LibName:    "maxminddb.lib",
+				FuncName:   "MMDB_open",
+			})
+		}, func() {
+			cmake.RequireHeaderExists("maxminddb.h")
+			cmake.RequireLibraryExists("maxminddb", "MMDB_open")
+			cmake.AddRequiredLibrary("maxminddb")
+		})
+	},
 	"github.com/measurement-kit/generic-assets": func(cmake *cmakefile.CMakeFile) {
 		cmake.DownloadAndExtractArchive(
 			"e7826c2575bacbc1aeccf64f10bfdf128c7ab38e6f5d17876775937986499df7",
