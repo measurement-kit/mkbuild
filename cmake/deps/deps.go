@@ -81,16 +81,28 @@ var All = map[string]func(*cmakefile.CMakeFile){
 			"https://github.com/measurement-kit/generic-assets/releases/download/20190205/generic-assets-20190205.tar.gz",
 		)
 	},
+	"github.com/measurement-kit/mkcurl": func(cmake *cmakefile.CMakeFile) {
+		cmake.AddSingleHeaderDependency(
+			"1f301bb3d8e254a8ee40eac44373c2cfa9648d0d3ea96485e9231817aaf18076",
+			"https://raw.githubusercontent.com/measurement-kit/mkcurl/v0.9.3/mkcurl.hpp",
+		)
+	},
 	"github.com/measurement-kit/mkdata": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
 			"96bb0384ecd7231a861111d8818a560b7d5ca83316cf7946a4f1a352db6ecfe3",
 			"https://raw.githubusercontent.com/measurement-kit/mkdata/v0.3.0/mkdata.hpp",
 		)
 	},
-	"github.com/measurement-kit/mkcurl": func(cmake *cmakefile.CMakeFile) {
+	"github.com/measurement-kit/mkiplookup": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
-			"c9ddc132322cada3e443e15f6d2876b22490d7b491111ee45abeaf67c06cd596",
-			"https://raw.githubusercontent.com/measurement-kit/mkcurl/v0.9.2/mkcurl.hpp",
+			"a815119250d09be5eff332289f90fd872910f3dc9f29bb4a5fe60e272b38174f",
+			"https://raw.githubusercontent.com/measurement-kit/mkiplookup/v0.2.0/mkiplookup.hpp",
+		)
+	},
+	"github.com/measurement-kit/mkmmdb": func(cmake *cmakefile.CMakeFile) {
+		cmake.AddSingleHeaderDependency(
+			"c1cdcf2980c977a0d4abbdd447ddc19eefdfe6faa42b3be752d50f29930d4a87",
+			"https://raw.githubusercontent.com/measurement-kit/mkmmdb/v0.4.0/mkmmdb.hpp",
 		)
 	},
 	"github.com/measurement-kit/mkmock": func(cmake *cmakefile.CMakeFile) {
