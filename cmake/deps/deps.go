@@ -4,6 +4,7 @@ package deps
 import (
 	"fmt"
 
+	"github.com/apex/log"
 	"github.com/measurement-kit/mkbuild/cmake/cmakefile"
 	"github.com/measurement-kit/mkbuild/cmake/cmakefile/prebuilt"
 )
@@ -11,6 +12,7 @@ import (
 // All contains all the dependencies that we know of.
 var All = map[string]func(*cmakefile.CMakeFile){
 	"curl.haxx.se/ca": func(cmake *cmakefile.CMakeFile) {
+		log.Warn("curl.haxx.se/ca is deprecated; used github.com/measurement-kit/generic-assets instead")
 		cmake.AddSingleFileAsset(
 			"c1fd9b235896b1094ee97bfb7e042f93530b5e300781f59b45edf84ee8c75000",
 			"https://curl.haxx.se/ca/cacert.pem",
@@ -50,6 +52,12 @@ var All = map[string]func(*cmakefile.CMakeFile){
 			cmake.RequireLibraryExists("curl", "curl_easy_init")
 			cmake.AddRequiredLibrary("curl")
 		})
+	},
+	"github.com/measurement-kit/generic-assets": func(cmake *cmakefile.CMakeFile) {
+		cmake.DownloadAndExtractArchive(
+			"e7826c2575bacbc1aeccf64f10bfdf128c7ab38e6f5d17876775937986499df7",
+			"https://github.com/measurement-kit/generic-assets/releases/download/20190205/generic-assets-20190205.tar.gz",
+		)
 	},
 	"github.com/measurement-kit/mkdata": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(

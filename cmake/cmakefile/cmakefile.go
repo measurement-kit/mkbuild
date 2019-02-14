@@ -308,7 +308,7 @@ func (cmake *CMakeFile) if32bit(func32 func(), func64 func()) {
 
 // Win32InstallPrebuilt installs a prebuilt Windows package.
 func (cmake *CMakeFile) Win32InstallPrebuilt(info *prebuilt.Info) {
-	cmake.downloadAndExtractArchive(info.SHA256, info.URL)
+	cmake.DownloadAndExtractArchive(info.SHA256, info.URL)
 	basedir := "${CMAKE_BINARY_DIR}/.mkbuild/download/" + info.Prefix + "/${MK_WIN32_ARCH}"
 	includedirname := basedir + "/include"
 	libnameFull := basedir + "/lib/" + info.LibName
@@ -318,8 +318,8 @@ func (cmake *CMakeFile) Win32InstallPrebuilt(info *prebuilt.Info) {
 	cmake.AddRequiredLibrary(libnameFull)
 }
 
-// downloadAndExtractArchive downloads and extracts and archive
-func (cmake *CMakeFile) downloadAndExtractArchive(SHA256, URL string) {
+// DownloadAndExtractArchive downloads and extracts and archive
+func (cmake *CMakeFile) DownloadAndExtractArchive(SHA256, URL string) {
 	archiveName := filepath.Base(URL)
 	cmake.writeSectionComment(archiveName)
 	dirname := "${CMAKE_BINARY_DIR}/.mkbuild/download"
