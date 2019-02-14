@@ -53,6 +53,12 @@ var All = map[string]func(*cmakefile.CMakeFile){
 			cmake.AddRequiredLibrary("curl")
 		})
 	},
+	"github.com/howardhinnant/date": func(cmake *cmakefile.CMakeFile) {
+		cmake.AddSingleHeaderDependency(
+			"07aa75752540023ccccab178ed193f536c9d032cbbda997159af9f339d331eda",
+			"https://raw.githubusercontent.com/HowardHinnant/date/v2.4.1/include/date/date.h",
+		)
+	},
 	"github.com/maxmind/libmaxminddb": func(cmake *cmakefile.CMakeFile) {
 		cmake.IfWIN32(func() {
 			version := "1.3.2-2"
