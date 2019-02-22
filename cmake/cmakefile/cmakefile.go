@@ -87,9 +87,6 @@ func Open(name string) *CMakeFile {
 	cmake.writeLine("list(APPEND CMAKE_REQUIRED_LIBRARIES Threads::Threads)")
 	cmake.IfWIN32(func() {
 		cmake.writeLine("list(APPEND CMAKE_REQUIRED_LIBRARIES ws2_32 crypt32)")
-		cmake.writeLine("if((\"${MINGW}\"))")
-		cmake.writeLine("  list(APPEND CMAKE_REQUIRED_LIBRARIES -static-libgcc -static-libstdc++)")
-		cmake.writeLine("endif()")
 	}, nil)
 	cmake.writeEmptyLine()
 	cmake.writeLine("enable_testing()")
