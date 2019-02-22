@@ -129,6 +129,12 @@ var All = map[string]func(*cmakefile.CMakeFile){
 			"https://raw.githubusercontent.com/measurement-kit/mkmock/v0.2.0/mkmock.hpp",
 		)
 	},
+	"github.com/measurement-kit/mkuuid4": func(cmake *cmakefile.CMakeFile) {
+		cmake.AddSingleHeaderDependency(
+			"5b6b4445697d9beb6ad5310d98b7743c2ffe8266cdec79df0a7a429dcfc247ac",
+			"https://raw.githubusercontent.com/measurement-kit/mkuuid4/v0.1.0/mkuuid4.hpp",
+		)
+	},
 	"github.com/nlohmann/json": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
 			"8a6dbf3bf01156f438d0ca7e78c2971bca50eec4ca6f0cf59adf3464c43bb9d5",
