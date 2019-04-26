@@ -100,6 +100,14 @@ func Open(name string) *CMakeFile {
 			cmake.writeLine("SET(MK_WIN32_ARCH \"x64\")")
 		})
 	}, nil)
+	cmake.writeLine(`if((${APPLE}))`)
+	// Apparently the following flags are now required on macOS to link
+	// with software compiled using Homebrew. Annoying.
+	cmake.writeLine(`  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/include")`)
+	cmake.writeLine(`  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/lib")`)
+	cmake.writeLine(`  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/local/lib")`)
+	cmake.writeLine(`  set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} -L/usr/local/lib")`)
+	cmake.writeLine(`endif()`)
 	return cmake
 }
 
