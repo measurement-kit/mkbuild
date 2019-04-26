@@ -150,7 +150,6 @@ var All = map[string]func(*cmakefile.CMakeFile){
 				cmake.WriteLine(`  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/opt/openssl/include")`)
 				cmake.WriteLine(`  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/opt/openssl/lib")`)
 				cmake.WriteLine(`  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/local/opt/openssl/lib")`)
-				cmake.WriteLine(`  set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} -L/usr/local/opt/openssl/lib")`)
 			})
 			cmake.WriteLine("endif()")
 		}, nil)
