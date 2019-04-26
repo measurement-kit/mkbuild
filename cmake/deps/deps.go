@@ -143,6 +143,17 @@ var All = map[string]func(*cmakefile.CMakeFile){
 	},
 	"github.com/openssl/openssl": func(cmake *cmakefile.CMakeFile) {
 		// TODO(bassosimone): implement OpenSSL support for Windows
+		cmake.IfAPPLE(func() {
+			// Automatically use Homebrew, if available
+			cmake.WriteLine(`if(EXISTS "/usr/local/opt/openssl")`)
+			cmake.WithIndent("  ", func() {
+				cmake.WriteLine(`  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/opt/openssl/include")`)
+				cmake.WriteLine(`  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/opt/openssl/lib")`)
+				cmake.WriteLine(`  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/local/opt/openssl/lib")`)
+				cmake.WriteLine(`  set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} -L/usr/local/opt/openssl/lib")`)
+			})
+			cmake.WriteLine("endif()")
+		}, nil)
 		cmake.RequireHeaderExists("openssl/rsa.h")
 		cmake.RequireLibraryExists("crypto", "RSA_new")
 		cmake.AddRequiredLibrary("crypto")
