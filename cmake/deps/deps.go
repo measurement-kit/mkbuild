@@ -24,6 +24,12 @@ var All = map[string]func(*cmakefile.CMakeFile){
 			"https://raw.githubusercontent.com/adishavit/argh/v1.3.0/argh.h",
 		)
 	},
+	"github.com/c-ares/c-ares": func(cmake *cmakefile.CMakeFile) {
+		// TODO(bassosimone): implement c-ares support for Windows
+		cmake.RequireHeaderExists("ares.h")
+		cmake.RequireLibraryExists("cares", "ares_process")
+		cmake.AddRequiredLibrary("cares")
+	},
 	"github.com/catchorg/catch2": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
 			"5eb8532fd5ec0d28433eba8a749102fd1f98078c5ebf35ad607fb2455a000004",
@@ -134,5 +140,14 @@ var All = map[string]func(*cmakefile.CMakeFile){
 			"8a6dbf3bf01156f438d0ca7e78c2971bca50eec4ca6f0cf59adf3464c43bb9d5",
 			"https://raw.githubusercontent.com/nlohmann/json/v3.5.0/single_include/nlohmann/json.hpp",
 		)
+	},
+	"github.com/openssl/openssl": func(cmake *cmakefile.CMakeFile) {
+		// TODO(bassosimone): implement OpenSSL support for Windows
+		cmake.RequireHeaderExists("openssl/rsa.h")
+		cmake.RequireLibraryExists("crypto", "RSA_new")
+		cmake.AddRequiredLibrary("crypto")
+		cmake.RequireHeaderExists("openssl/ssl.h")
+		cmake.RequireLibraryExists("ssl", "SSL_read")
+		cmake.AddRequiredLibrary("ssl")
 	},
 }
