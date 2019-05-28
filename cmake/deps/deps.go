@@ -4,6 +4,7 @@ package deps
 import (
 	"fmt"
 
+	"github.com/apex/log"
 	"github.com/measurement-kit/mkbuild/cmake/cmakefile"
 	"github.com/measurement-kit/mkbuild/cmake/cmakefile/prebuilt"
 )
@@ -13,23 +14,25 @@ var All = map[string]func(*cmakefile.CMakeFile){
 	"github.com/adishavit/argh": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
 			"ddb7dfc18dcf90149735b76fb2cff101067453a1df1943a6911233cb7085980c",
-			"https://raw.githubusercontent.com/adishavit/argh/v1.3.0/argh.h",
+			"https://raw.githubusercontent.com/adishavit/argh/v1.3.1/argh.h",
 		)
 	},
 	"github.com/c-ares/c-ares": func(cmake *cmakefile.CMakeFile) {
 		// TODO(bassosimone): implement c-ares support for Windows
+		log.Warn("github.com/c-ares/c-ares: not supported on Windows")
 		cmake.RequireHeaderExists("ares.h")
 		cmake.RequireLibraryExists("cares", "ares_process")
 		cmake.AddRequiredLibrary("cares")
 	},
 	"github.com/catchorg/catch2": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
-			"5eb8532fd5ec0d28433eba8a749102fd1f98078c5ebf35ad607fb2455a000004",
-			"https://github.com/catchorg/Catch2/releases/download/v2.3.0/catch.hpp",
+			"2791047e459b981a1035f4ee16a2ad031f5bfb4ba66487ad4d3fc816c8946f61",
+			"https://github.com/catchorg/Catch2/releases/download/v2.8.0/catch.hpp",
 		)
 	},
 	"github.com/curl/curl": func(cmake *cmakefile.CMakeFile) {
 		cmake.IfWIN32(func() {
+			log.Warn("github.com/curl/curl: we're using an OLD version on Windows")
 			version := "7.61.1-1"
 			cmake.Win32InstallPrebuilt(&prebuilt.Info{
 				SHA256: "424d2f18f0f74dd6a0128f0f4e59860b7d2f00c80bbf24b2702e9cac661357cf",
@@ -81,8 +84,8 @@ var All = map[string]func(*cmakefile.CMakeFile){
 	},
 	"github.com/measurement-kit/generic-assets": func(cmake *cmakefile.CMakeFile) {
 		cmake.DownloadAndExtractArchive(
-			"e7826c2575bacbc1aeccf64f10bfdf128c7ab38e6f5d17876775937986499df7",
-			"https://github.com/measurement-kit/generic-assets/releases/download/20190205/generic-assets-20190205.tar.gz",
+			"70d590c20b2ed31fd43cc63709b267672fecfeac7e908d11e845664ddd43b04f",
+			"https://github.com/measurement-kit/generic-assets/releases/download/20190520205742/generic-assets-20190520205742.tar.gz",
 		)
 	},
 	"github.com/measurement-kit/mkbouncer": func(cmake *cmakefile.CMakeFile) {
@@ -93,8 +96,8 @@ var All = map[string]func(*cmakefile.CMakeFile){
 	},
 	"github.com/measurement-kit/mkcollector": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
-			"f6edaaf83c02255598827e566b54944bd8285b0387433bd2851fa97a5598deb7",
-			"https://raw.githubusercontent.com/measurement-kit/mkcollector/v0.3.0/mkcollector.hpp",
+			"fbc31ab524bc730ff56a992c506aafe805232fbee0127ecbaa4f996774ec8096",
+			"https://raw.githubusercontent.com/measurement-kit/mkcollector/v0.5.0/mkcollector.hpp",
 		)
 	},
 	"github.com/measurement-kit/mkcurl": func(cmake *cmakefile.CMakeFile) {
@@ -135,8 +138,8 @@ var All = map[string]func(*cmakefile.CMakeFile){
 	},
 	"github.com/nlohmann/json": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
-			"8a6dbf3bf01156f438d0ca7e78c2971bca50eec4ca6f0cf59adf3464c43bb9d5",
-			"https://raw.githubusercontent.com/nlohmann/json/v3.5.0/single_include/nlohmann/json.hpp",
+			"d2eeb25d2e95bffeb08ebb7704cdffd2e8fca7113eba9a0b38d60a5c391ea09a",
+			"https://raw.githubusercontent.com/nlohmann/json/v3.6.1/single_include/nlohmann/json.hpp",
 		)
 	},
 	"github.com/openssl/openssl": func(cmake *cmakefile.CMakeFile) {
