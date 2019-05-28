@@ -4,7 +4,6 @@ package deps
 import (
 	"fmt"
 
-	"github.com/apex/log"
 	"github.com/measurement-kit/mkbuild/cmake/cmakefile"
 	"github.com/measurement-kit/mkbuild/cmake/cmakefile/prebuilt"
 )
