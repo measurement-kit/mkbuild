@@ -148,6 +148,7 @@ var All = map[string]func(*cmakefile.CMakeFile){
 			// Automatically use Homebrew, if available
 			cmake.WriteLine(`if(EXISTS "/usr/local/opt/openssl")`)
 			cmake.WithIndent("  ", func() {
+				cmake.WriteLine(`  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/local/opt/openssl/include")`)
 				cmake.WriteLine(`  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/opt/openssl/include")`)
 				cmake.WriteLine(`  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/opt/openssl/lib")`)
 				cmake.WriteLine(`  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/local/opt/openssl/lib")`)
