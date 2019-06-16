@@ -264,13 +264,25 @@ func (cmake *CMakeFile) AddLibrary(
 			cmake.WriteLine(fmt.Sprintf("install(TARGETS %s DESTINATION lib)", name))
 		}
 	}
-	if headers != nil {
+	if headers != nil && install {
 		cmake.WriteLine(fmt.Sprintf("install("))
 		cmake.WriteLine(fmt.Sprintf("  FILES"))
 		for _, header := range headers {
 			cmake.WriteLine(fmt.Sprintf("  %s", header))
 		}
 		cmake.WriteLine(fmt.Sprintf("  DESTINATION include"))
+		cmake.WriteLine(fmt.Sprintf(")"))
+	}
+}
+
+// AddScript defines a script to be installed.
+func (cmake *CMakeFile) AddScript(name string, install bool) {
+	if install {
+		cmake.writeSectionComment(name)
+		cmake.WriteLine(fmt.Sprintf("install("))
+		cmake.WriteLine(fmt.Sprintf("  PROGRAMS"))
+		cmake.WriteLine(fmt.Sprintf("  %s", name))
+		cmake.WriteLine(fmt.Sprintf("  DESTINATION bin"))
 		cmake.WriteLine(fmt.Sprintf(")"))
 	}
 }

@@ -28,11 +28,17 @@ type LibraryBuildInfo struct {
 	// Link lists all the libraries to link
 	Link []string
 
-	// Install indicates whether to install the target
+	// Install indicates whether to install the library
 	Install bool
 
 	// Headers contains all the public headers
 	Headers []string
+}
+
+// ScriptBuildInfo contains info on building a script
+type ScriptBuildInfo struct {
+	// Install indicates whether to install the script
+	Install bool
 }
 
 // TargetsInfo contains info on all targets
@@ -40,8 +46,11 @@ type TargetsInfo struct {
 	// Libraries lists all the libraries to build
 	Libraries map[string]LibraryBuildInfo
 
-	// Executables lists all the executabls to build
+	// Executables lists all the executables to build
 	Executables map[string]BuildInfo
+
+	// Scripts lists all the scripts to build
+	Scripts map[string]ScriptBuildInfo
 }
 
 // TestInfo contains info on a test

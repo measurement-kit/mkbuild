@@ -28,6 +28,15 @@ func sortedLibraryBuildInfo(m map[string]pkginfo.LibraryBuildInfo) []string {
 	return res
 }
 
+func sortedScriptBuildInfo(m map[string]pkginfo.ScriptBuildInfo) []string {
+	var res []string
+	for k, _ := range m {
+		res = append(res, k)
+	}
+	sort.Strings(res)
+	return res
+}
+
 func sortedTestInfo(m map[string]pkginfo.TestInfo) []string {
 	var res []string
 	for k, _ := range m {
@@ -61,6 +70,10 @@ func Generate(pkginfo *pkginfo.PkgInfo) {
 		cmake.AddExecutable(
 			name, buildinfo.Compile, buildinfo.Link, buildinfo.Install,
 		)
+	}
+	for _, name := range sortedScriptBuildInfo(pkginfo.Targets.Scripts) {
+		buildinfo := pkginfo.Targets.Scripts[name]
+		cmake.AddScript(name, buildinfo.Install)
 	}
 	for _, name := range sortedTestInfo(pkginfo.Tests) {
 		testinfo := pkginfo.Tests[name]
