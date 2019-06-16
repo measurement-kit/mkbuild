@@ -249,17 +249,29 @@ func (cmake *CMakeFile) AddExecutable(
 // AddLibrary defines a library to be compiled.
 func (cmake *CMakeFile) AddLibrary(
 	name string, sources []string, libs []string, install bool,
+	headers []string,
 ) {
 	cmake.writeSectionComment(name)
-	cmake.WriteLine(fmt.Sprintf("add_library("))
-	cmake.WriteLine(fmt.Sprintf("  %s", name))
-	for _, source := range sources {
-		cmake.WriteLine(fmt.Sprintf("  %s", source))
+	if sources != nil {
+		cmake.WriteLine(fmt.Sprintf("add_library("))
+		cmake.WriteLine(fmt.Sprintf("  %s", name))
+		for _, source := range sources {
+			cmake.WriteLine(fmt.Sprintf("  %s", source))
+		}
+		cmake.WriteLine(fmt.Sprintf(")"))
+		cmake.targetLinkLibraries(name, libs)
+		if install {
+			cmake.WriteLine(fmt.Sprintf("install(TARGETS %s DESTINATION lib)", name))
+		}
 	}
-	cmake.WriteLine(fmt.Sprintf(")"))
-	cmake.targetLinkLibraries(name, libs)
-	if install {
-		cmake.WriteLine(fmt.Sprintf("install(TARGETS %s DESTINATION lib)", name))
+	if headers != nil {
+		cmake.WriteLine(fmt.Sprintf("install("))
+		cmake.WriteLine(fmt.Sprintf("  FILES"))
+		for _, header := range headers {
+			cmake.WriteLine(fmt.Sprintf("  %s", header))
+		}
+		cmake.WriteLine(fmt.Sprintf("  DESTINATION include"))
+		cmake.WriteLine(fmt.Sprintf(")"))
 	}
 }
 

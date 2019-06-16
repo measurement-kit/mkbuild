@@ -20,10 +20,25 @@ type BuildInfo struct {
 	Install bool
 }
 
+// LibraryBuildInfo contains info on building a library
+type LibraryBuildInfo struct {
+	// Compile lists all the sources to compile
+	Compile []string
+
+	// Link lists all the libraries to link
+	Link []string
+
+	// Install indicates whether to install the target
+	Install bool
+
+	// Headers contains all the public headers
+	Headers []string
+}
+
 // TargetsInfo contains info on all targets
 type TargetsInfo struct {
 	// Libraries lists all the libraries to build
-	Libraries map[string]BuildInfo
+	Libraries map[string]LibraryBuildInfo
 
 	// Executables lists all the executabls to build
 	Executables map[string]BuildInfo
