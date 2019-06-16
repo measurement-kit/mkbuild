@@ -230,7 +230,9 @@ func (cmake *CMakeFile) targetLinkLibraries(name string, libs []string) {
 }
 
 // AddExecutable defines an executable to be compiled.
-func (cmake *CMakeFile) AddExecutable(name string, sources []string, libs []string) {
+func (cmake *CMakeFile) AddExecutable(
+	name string, sources []string, libs []string, install bool,
+) {
 	cmake.writeSectionComment(name)
 	cmake.WriteLine(fmt.Sprintf("add_executable("))
 	cmake.WriteLine(fmt.Sprintf("  %s", name))
@@ -239,10 +241,15 @@ func (cmake *CMakeFile) AddExecutable(name string, sources []string, libs []stri
 	}
 	cmake.WriteLine(fmt.Sprintf(")"))
 	cmake.targetLinkLibraries(name, libs)
+	if install {
+		cmake.WriteLine(fmt.Sprintf("install(TARGETS %s DESTINATION bin)", name))
+	}
 }
 
 // AddLibrary defines a library to be compiled.
-func (cmake *CMakeFile) AddLibrary(name string, sources []string, libs []string) {
+func (cmake *CMakeFile) AddLibrary(
+	name string, sources []string, libs []string, install bool,
+) {
 	cmake.writeSectionComment(name)
 	cmake.WriteLine(fmt.Sprintf("add_library("))
 	cmake.WriteLine(fmt.Sprintf("  %s", name))
@@ -251,6 +258,9 @@ func (cmake *CMakeFile) AddLibrary(name string, sources []string, libs []string)
 	}
 	cmake.WriteLine(fmt.Sprintf(")"))
 	cmake.targetLinkLibraries(name, libs)
+	if install {
+		cmake.WriteLine(fmt.Sprintf("install(TARGETS %s DESTINATION lib)", name))
+	}
 }
 
 // RunTest defines a test to be run

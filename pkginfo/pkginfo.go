@@ -15,6 +15,9 @@ type BuildInfo struct {
 
 	// Link lists all the libraries to link
 	Link []string
+
+	// Install indicates whether to install the target
+	Install bool
 }
 
 // TargetsInfo contains info on all targets
