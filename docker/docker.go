@@ -84,9 +84,9 @@ else
 fi
 
 # Configure, make, and make check equivalent
-mkdir build
-cd build
-cmake -GNinja -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ..
+mkdir -p build/$BUILD_TYPE
+cd build/$BUILD_TYPE
+cmake -GNinja -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ../../
 cmake --build . -- -v
 ctest --output-on-failure -a -j8
 
