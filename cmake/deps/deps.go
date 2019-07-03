@@ -102,8 +102,8 @@ var All = map[string]func(*cmakefile.CMakeFile){
 	},
 	"github.com/measurement-kit/mkcurl": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
-			"c0618850d11995873f09f5dea07ee92c054353945aaa2acd0aa4cb2754103b5d",
-			"https://raw.githubusercontent.com/measurement-kit/mkcurl/v0.11.0/mkcurl.hpp",
+			"2dbc75c887cbce81b9267bdfeb2c4ed0e304eb3d50dc4d8d96776c408cc2c7c4",
+			"https://raw.githubusercontent.com/measurement-kit/mkcurl/v0.11.1/mkcurl.hpp",
 		)
 	},
 	"github.com/measurement-kit/mkdata": func(cmake *cmakefile.CMakeFile) {
