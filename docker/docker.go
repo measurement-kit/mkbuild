@@ -37,6 +37,7 @@ set -x
 
 if [ $INTERNAL -eq 0 ]; then
   exec docker run --cap-add=NET_ADMIN \
+                  --cap-add=SYS_PTRACE \
                   -e CODECOV_TOKEN=$CODECOV_TOKEN \
                   -e TRAVIS_BRANCH=$TRAVIS_BRANCH \
                   -v "$(pwd):/mk" \
