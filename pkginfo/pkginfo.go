@@ -67,6 +67,14 @@ type PkgInfo struct {
 	// Docker is the docker container to use for running tests
 	Docker string
 
+	// DockerTcDisabled indicates whether we should disable using tc inside
+	// the container to artificially increase the latency. This is usually
+	// needed when you measure performance and is actually counterproductive
+	// otherwise, because it slows down operations and may also cause some
+	// more or less predicatable failures. The reason why this flag defaults
+	// to not disabling `tc` is to provide backward compatibility.
+	DockerTcDisabled bool `yaml:"docker_tc_disabled"`
+
 	// Dependencies are the package dependencies
 	Dependencies []string
 
