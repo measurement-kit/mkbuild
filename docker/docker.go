@@ -37,6 +37,7 @@ set -x
 
 if [ $INTERNAL -eq 0 ]; then
   exec docker run --cap-add=NET_ADMIN \
+                  --cap-add=SYS_PTRACE \
                   -e CODECOV_TOKEN=$CODECOV_TOKEN \
                   -e TRAVIS_BRANCH=$TRAVIS_BRANCH \
                   -v "$(pwd):/mk" \
@@ -46,9 +47,6 @@ if [ $INTERNAL -eq 0 ]; then
 fi
 
 env | grep -v TOKEN | sort
-
-# Make sure we don't consume too much resources by bumping latency
-tc qdisc add dev eth0 root netem delay 200ms 10ms
 
 # Select the proper build flags depending on the build type
 if [ "$BUILD_TYPE" = "asan" ]; then
@@ -83,12 +81,21 @@ else
   exit 1
 fi
 
-# Configure, make, and make check equivalent
+# Configure and make equivalent
 mkdir -p build/$BUILD_TYPE
 cd build/$BUILD_TYPE
 cmake -GNinja -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ../../
 cmake --build . -- -v
+
+# Make sure we don't consume too much resources by bumping latency. Not all
+# repositories need this feature. For them the code is commented out.
+{{.TC_DISABLED}}tc qdisc add dev eth0 root netem delay 200ms 10ms
+
+# Make check equivalent
 ctest --output-on-failure -a -j8
+
+# Stop adding latency. Commented out if we don't need it.
+{{.TC_DISABLED}}tc qdisc del dev eth0 root
 
 # Measure and possibly report the test coverage
 if [ "$BUILD_TYPE" = "coverage" ]; then
@@ -100,8 +107,19 @@ if [ "$BUILD_TYPE" = "coverage" ]; then
 fi
 `
 
+// tcDisabledString returns an empty string is if the tc utility is configured
+// to increase the latency, or a comment otherwise
+func tcDisabledString(pkginfo *pkginfo.PkgInfo) (s string) {
+	if pkginfo.DockerTcDisabled == true {
+		s = "#"
+	}
+	return
+}
+
 // writeSingleDockerScript writes a single docker script.
-func writeSingleDockerScript(pkginfo *pkginfo.PkgInfo, dirname, name, content string) {
+func writeSingleDockerScript(
+	pkginfo *pkginfo.PkgInfo, dirname, name, content string,
+) {
 	tmpl := template.Must(template.New(name).Parse(content))
 	filename := dirname + "/" + name
 	filep, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
@@ -111,6 +129,7 @@ func writeSingleDockerScript(pkginfo *pkginfo.PkgInfo, dirname, name, content st
 	defer filep.Close()
 	err = tmpl.Execute(filep, map[string]string{
 		"CONTAINER_NAME": pkginfo.Docker,
+		"TC_DISABLED": tcDisabledString(pkginfo),
 	})
 	if err != nil {
 		log.WithError(err).Fatalf("cannot write file: %s", filename)
