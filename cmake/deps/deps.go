@@ -90,8 +90,8 @@ var All = map[string]func(*cmakefile.CMakeFile){
 	},
 	"github.com/measurement-kit/mkbouncer": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
-			"b6d8cf8ce7c832b20997cbd2d2a33dbaf80a347eea4073173a7d8c1ef8f176ab",
-			"https://raw.githubusercontent.com/measurement-kit/mkbouncer/v0.1.0/mkbouncer.hpp",
+			"1317cf389fad9b4a262bfc61bd15f42c5f988582f0ecc426497eb13791ea50e4",
+			"https://raw.githubusercontent.com/measurement-kit/mkbouncer/v0.2.0/mkbouncer.hpp",
 		)
 	},
 	"github.com/measurement-kit/mkcollector": func(cmake *cmakefile.CMakeFile) {
@@ -102,8 +102,8 @@ var All = map[string]func(*cmakefile.CMakeFile){
 	},
 	"github.com/measurement-kit/mkcurl": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
-			"2dbc75c887cbce81b9267bdfeb2c4ed0e304eb3d50dc4d8d96776c408cc2c7c4",
-			"https://raw.githubusercontent.com/measurement-kit/mkcurl/v0.11.1/mkcurl.hpp",
+			"cb58b85ccdf8d9f3b559ccab7d2f31cad4f8aba774e9953534e32373d415ec94",
+			"https://raw.githubusercontent.com/measurement-kit/mkcurl/v0.12.0/mkcurl.hpp",
 		)
 	},
 	"github.com/measurement-kit/mkdata": func(cmake *cmakefile.CMakeFile) {
