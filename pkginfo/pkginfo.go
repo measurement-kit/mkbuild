@@ -59,10 +59,37 @@ type TestInfo struct {
 	Command string
 }
 
+// FunctionCheck adds a check for a specific function
+type FunctionCheck struct {
+	// Name is the function name
+	Name string
+
+	// Define is the define to add to the build if function exists
+	Define string
+}
+
+// SymbolCheck adds a check for a specific symbol
+type SymbolCheck struct {
+	// Name is the symbol name
+	Name string
+
+	// Header is the header to include for checking for the symbol
+	Header string
+
+	// Define is the define to add to the build if symbol exists
+	Define string
+}
+
 // PkgInfo contains information on a package
 type PkgInfo struct {
 	// Name is the name of the package
 	Name string
+
+	// FunctionChecks contains all the checks for functions
+	FunctionChecks []FunctionCheck `yaml:"function_checks"`
+
+	// SymbolChecks contains all the checks for symbols
+	SymbolChecks []SymbolCheck `yaml:"symbol_checks"`
 
 	// Docker is the docker container to use for running tests
 	Docker string
