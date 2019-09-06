@@ -50,6 +50,12 @@ func sortedTestInfo(m map[string]pkginfo.TestInfo) []string {
 func Generate(pkginfo *pkginfo.PkgInfo) {
 	cmake := cmakefile.Open(pkginfo.Name)
 	defer cmake.Close()
+	for _, funcheck := range pkginfo.FunctionChecks {
+		cmake.CheckFunctionExists(funcheck.Name, funcheck.Define)
+	}
+	for _, symcheck := range pkginfo.SymbolChecks {
+		cmake.CheckSymbolExists(symcheck.Name, symcheck.Header, symcheck.Define)
+	}
 	for _, depname := range pkginfo.Dependencies {
 		handler, ok := deps.All[depname]
 		if !ok {

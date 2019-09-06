@@ -1,8 +1,19 @@
 // Package prebuilt helps to define prebuilt packages
 package prebuilt
 
-// Info describes a prebuilt package
-type Info struct {
+// Library contains info on a prebuilt library
+type Library struct {
+	// Name is the name of the library to try to link with to make
+	// sure that the installation was correct
+	Name string
+
+	// Func is the name of the function to import from LibName
+	// when trying to make sure that the installation was OK
+	Func string
+}
+
+// Package describes a prebuilt package
+type Package struct {
 	// SHA256 is the SHA256 of the tarball
 	SHA256 string
 
@@ -17,11 +28,6 @@ type Info struct {
 	// that the installation was correct
 	HeaderName string
 
-	// LibName is the name of the library to try to link with to make
-	// sure that the installation was correct
-	LibName string
-
-	// FuncName is the name of the function to import from LibName
-	// when trying to make sure that the installation was OK
-	FuncName string
+	// Libs contains info to the libs to add to the build
+	Libs []Library
 }

@@ -129,7 +129,7 @@ func writeSingleDockerScript(
 	defer filep.Close()
 	err = tmpl.Execute(filep, map[string]string{
 		"CONTAINER_NAME": pkginfo.Docker,
-		"TC_DISABLED": tcDisabledString(pkginfo),
+		"TC_DISABLED":    tcDisabledString(pkginfo),
 	})
 	if err != nil {
 		log.WithError(err).Fatalf("cannot write file: %s", filename)

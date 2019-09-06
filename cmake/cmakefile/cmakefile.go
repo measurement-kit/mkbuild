@@ -104,6 +104,9 @@ func Open(name string) *CMakeFile {
 	cmake.WriteLine(`  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/lib")`)
 	cmake.WriteLine(`  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/local/lib")`)
 	cmake.WriteLine(`endif()`)
+	cmake.writeEmptyLine()
+	cmake.WriteLine(`include(CheckFunctionExists)`)
+	cmake.WriteLine(`include(CheckSymbolExists)`)
 	return cmake
 }
 
@@ -152,6 +155,30 @@ func (cmake *CMakeFile) unzip(filename, destdir string) {
 // untar extracts |filename| in |destdir|.
 func (cmake *CMakeFile) untar(filename, destdir string) {
 	cmake.unzip(filename, destdir)
+}
+
+// CheckFunctionExists checks whether |name| is a function and
+// defines the |define| preprocessor macro in such case.
+func (cmake *CMakeFile) CheckFunctionExists(name, define string) {
+	cmake.WriteLine(fmt.Sprintf("check_function_exists(%s %s)", name, define))
+	cmake.WriteLine(fmt.Sprintf("if(${%s})", define))
+	cmake.WithIndent("  ", func() {
+		cmake.WriteLine(fmt.Sprintf("add_definitions(-D%s)", define))
+	})
+	cmake.WriteLine("endif()")
+}
+
+// CheckSymbolExists checks whether |name| is a symbol in |header| and
+// defines the |define| preprocessor macro in such case.
+func (cmake *CMakeFile) CheckSymbolExists(name, header, define string) {
+	cmake.WriteLine(fmt.Sprintf(
+		"check_symbol_exists(%s %s %s)", name, header, define,
+	))
+	cmake.WriteLine(fmt.Sprintf("if(${%s})", define))
+	cmake.WithIndent("  ", func() {
+		cmake.WriteLine(fmt.Sprintf("add_definitions(-D%s)", define))
+	})
+	cmake.WriteLine("endif()")
 }
 
 // AddRequiredDefinition adds |definition| to the macro definitions
@@ -357,15 +384,17 @@ func (cmake *CMakeFile) if32bit(func32 func(), func64 func()) {
 }
 
 // Win32InstallPrebuilt installs a prebuilt Windows package.
-func (cmake *CMakeFile) Win32InstallPrebuilt(info *prebuilt.Info) {
-	cmake.DownloadAndExtractArchive(info.SHA256, info.URL)
-	basedir := "${CMAKE_BINARY_DIR}/.mkbuild/download/" + info.Prefix + "/${MK_WIN32_ARCH}"
+func (cmake *CMakeFile) Win32InstallPrebuilt(pkg *prebuilt.Package) {
+	cmake.DownloadAndExtractArchive(pkg.SHA256, pkg.URL)
+	basedir := "${CMAKE_BINARY_DIR}/.mkbuild/download/" + pkg.Prefix + "/${MK_WIN32_ARCH}"
 	includedirname := basedir + "/include"
-	libnameFull := basedir + "/lib/" + info.LibName
 	cmake.AddRequiredIncludeDir(includedirname)
-	cmake.RequireHeaderExists(info.HeaderName)
-	cmake.RequireLibraryExists(libnameFull, info.FuncName)
-	cmake.AddRequiredLibrary(libnameFull)
+	cmake.RequireHeaderExists(pkg.HeaderName)
+	for _, lib := range pkg.Libs {
+		libnameFull := basedir + "/lib/" + lib.Name
+		cmake.RequireLibraryExists(libnameFull, lib.Func)
+		cmake.AddRequiredLibrary(libnameFull)
+	}
 }
 
 // DownloadAndExtractArchive downloads and extracts and archive
