@@ -105,6 +105,10 @@ type PkgInfo struct {
 	// Dependencies are the package dependencies
 	Dependencies []string
 
+	// Amalgamate maps names the name of an amalgamated file to the
+	// sorted list of source files that should be amalgamated.
+	Amalgamate map[string][]string
+
 	// Targets contains information on what we need to build
 	Targets TargetsInfo
 
