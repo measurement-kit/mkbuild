@@ -2,11 +2,8 @@
 package deps
 
 import (
-	"fmt"
-
 	"github.com/apex/log"
 	"github.com/measurement-kit/mkbuild/cmake/cmakefile"
-	"github.com/measurement-kit/mkbuild/cmake/cmakefile/prebuilt"
 )
 
 // All contains all the dependencies that we know of.
@@ -31,32 +28,10 @@ var All = map[string]func(*cmakefile.CMakeFile){
 		)
 	},
 	"github.com/curl/curl": func(cmake *cmakefile.CMakeFile) {
-		cmake.IfWIN32(func() {
-			log.Warn("github.com/curl/curl: we're using an OLD VERSION on Windows")
-			version := "7.61.1-1"
-			cmake.Win32InstallPrebuilt(&prebuilt.Package{
-				SHA256: "424d2f18f0f74dd6a0128f0f4e59860b7d2f00c80bbf24b2702e9cac661357cf",
-				URL: fmt.Sprintf(
-					"%s/%s/windows-curl-%s.tar.gz",
-					"https://github.com/measurement-kit/prebuilt/releases/download/",
-					"testing",
-					version,
-				),
-				Prefix:     "MK_DIST/windows/curl/" + version,
-				HeaderName: "curl/curl.h",
-				Libs: []prebuilt.Library{
-					prebuilt.Library{
-						Name: "libcurl.lib",
-						Func: "curl_easy_init",
-					},
-				},
-			})
-			cmake.AddRequiredDefinition("-DCURL_STATICLIB")
-		}, func() {
-			cmake.RequireHeaderExists("curl/curl.h")
-			cmake.RequireLibraryExists("curl", "curl_easy_init")
-			cmake.AddRequiredLibrary("curl")
-		})
+		// TODO(bassosimone): implement curl support for Windows
+		cmake.RequireHeaderExists("curl/curl.h")
+		cmake.RequireLibraryExists("curl", "curl_easy_init")
+		cmake.AddRequiredLibrary("curl")
 	},
 	"github.com/howardhinnant/date": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
@@ -65,30 +40,10 @@ var All = map[string]func(*cmakefile.CMakeFile){
 		)
 	},
 	"github.com/maxmind/libmaxminddb": func(cmake *cmakefile.CMakeFile) {
-		cmake.IfWIN32(func() {
-			version := "1.3.2-2"
-			cmake.Win32InstallPrebuilt(&prebuilt.Package{
-				SHA256: "542933912814ac518037bd26083d0bba9daf68084f43c5cf2d7ec944d62b9ebb",
-				URL: fmt.Sprintf(
-					"%s/%s/windows-libmaxminddb-%s.tar.gz",
-					"https://github.com/measurement-kit/prebuilt/releases/download/",
-					"testing",
-					version,
-				),
-				Prefix:     "MK_DIST/windows/libmaxminddb/" + version,
-				HeaderName: "maxminddb.h",
-				Libs: []prebuilt.Library{
-					prebuilt.Library{
-						Name: "maxminddb.lib",
-						Func: "MMDB_open",
-					},
-				},
-			})
-		}, func() {
-			cmake.RequireHeaderExists("maxminddb.h")
-			cmake.RequireLibraryExists("maxminddb", "MMDB_open")
-			cmake.AddRequiredLibrary("maxminddb")
-		})
+		// TODO(bassosimone): implement libmaxminddb support for Windows
+		cmake.RequireHeaderExists("maxminddb.h")
+		cmake.RequireLibraryExists("maxminddb", "MMDB_open")
+		cmake.AddRequiredLibrary("maxminddb")
 	},
 	"github.com/measurement-kit/generic-assets": func(cmake *cmakefile.CMakeFile) {
 		cmake.DownloadAndExtractArchive(
@@ -151,49 +106,23 @@ var All = map[string]func(*cmakefile.CMakeFile){
 		)
 	},
 	"github.com/openssl/openssl": func(cmake *cmakefile.CMakeFile) {
-		cmake.IfWIN32(func() {
-			log.Warn("github.com/openssl/openssl: we're using LIBRESSL on Windows")
-			log.Warn("github.com/openssl/openssl: we're using and OLD VERSION on Windows")
-			version := "2.7.4-1"
-			cmake.Win32InstallPrebuilt(&prebuilt.Package{
-				SHA256: "e800f69a97f5ae850776299dda4e1edc39edc43229cfd1c5764c56c90c2f219a",
-				URL: fmt.Sprintf(
-					"%s/%s/windows-libressl-%s.tar.gz",
-					"https://github.com/measurement-kit/prebuilt/releases/download/",
-					"testing",
-					version,
-				),
-				Prefix:     "MK_DIST/windows/libressl/" + version,
-				HeaderName: "openssl/rsa.h",
-				Libs: []prebuilt.Library{
-					prebuilt.Library{
-						Name: "crypto.lib",
-						Func: "RSA_new",
-					},
-					prebuilt.Library{
-						Name: "ssl.lib",
-						Func: "SSL_new",
-					},
-				},
+		// TODO(bassosimone): implement openssl support for Windows
+		cmake.IfAPPLE(func() {
+			// Automatically use Homebrew, if available
+			cmake.WriteLine(`if(EXISTS "/usr/local/opt/openssl@1.1")`)
+			cmake.WithIndent("  ", func() {
+				cmake.WriteLine(`  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/local/opt/openssl@1.1/include")`)
+				cmake.WriteLine(`  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/opt/openssl@1.1/include")`)
+				cmake.WriteLine(`  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/opt/openssl@1.1/lib")`)
+				cmake.WriteLine(`  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/local/opt/openssl@1.1/lib")`)
 			})
-		}, func() {
-			cmake.IfAPPLE(func() {
-				// Automatically use Homebrew, if available
-				cmake.WriteLine(`if(EXISTS "/usr/local/opt/openssl@1.1")`)
-				cmake.WithIndent("  ", func() {
-					cmake.WriteLine(`  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/local/opt/openssl@1.1/include")`)
-					cmake.WriteLine(`  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/opt/openssl@1.1/include")`)
-					cmake.WriteLine(`  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/opt/openssl@1.1/lib")`)
-					cmake.WriteLine(`  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/local/opt/openssl@1.1/lib")`)
-				})
-				cmake.WriteLine("endif()")
-			}, nil)
-			cmake.RequireHeaderExists("openssl/rsa.h")
-			cmake.RequireLibraryExists("crypto", "RSA_new")
-			cmake.AddRequiredLibrary("crypto")
-			cmake.RequireHeaderExists("openssl/ssl.h")
-			cmake.RequireLibraryExists("ssl", "SSL_read")
-			cmake.AddRequiredLibrary("ssl")
-		})
+			cmake.WriteLine("endif()")
+		}, nil)
+		cmake.RequireHeaderExists("openssl/rsa.h")
+		cmake.RequireLibraryExists("crypto", "RSA_new")
+		cmake.AddRequiredLibrary("crypto")
+		cmake.RequireHeaderExists("openssl/ssl.h")
+		cmake.RequireLibraryExists("ssl", "SSL_read")
+		cmake.AddRequiredLibrary("ssl")
 	},
 }

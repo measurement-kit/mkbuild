@@ -330,7 +330,7 @@ func (cmake *CMakeFile) AddScript(name string, install bool) {
 	}
 }
 
-// RunTest defines a test to be run
+// AddTest defines a test to be run
 func (cmake *CMakeFile) AddTest(name, command string) {
 	cmake.writeSectionComment("test: " + name)
 	cmake.WriteLine(fmt.Sprintf("add_test("))
