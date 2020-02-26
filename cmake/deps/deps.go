@@ -23,8 +23,8 @@ var All = map[string]func(*cmakefile.CMakeFile){
 	},
 	"github.com/catchorg/catch2": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
-			"2791047e459b981a1035f4ee16a2ad031f5bfb4ba66487ad4d3fc816c8946f61",
-			"https://github.com/catchorg/Catch2/releases/download/v2.8.0/catch.hpp",
+			"914690be7714fed1f228679a0e379b4e1f6d7d66f88ac20335b7853ff1a8bc55",
+			"https://github.com/catchorg/Catch2/releases/download/v2.11.1/catch.hpp",
 		)
 	},
 	"github.com/curl/curl": func(cmake *cmakefile.CMakeFile) {
@@ -101,8 +101,8 @@ var All = map[string]func(*cmakefile.CMakeFile){
 	},
 	"github.com/nlohmann/json": func(cmake *cmakefile.CMakeFile) {
 		cmake.AddSingleHeaderDependency(
-			"d2eeb25d2e95bffeb08ebb7704cdffd2e8fca7113eba9a0b38d60a5c391ea09a",
-			"https://raw.githubusercontent.com/nlohmann/json/v3.6.1/single_include/nlohmann/json.hpp",
+			"3b5d2b8f8282b80557091514d8ab97e27f9574336c804ee666fda673a9b59926",
+			"https://raw.githubusercontent.com/nlohmann/json/v3.7.3/single_include/nlohmann/json.hpp",
 		)
 	},
 	"github.com/openssl/openssl": func(cmake *cmakefile.CMakeFile) {
